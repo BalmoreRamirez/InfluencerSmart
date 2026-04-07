@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { companyProfile } from "@/shared/lib/mock-data";
 
+import { ProtectedRoute } from "@/shared/components/auth/protected-route";
 const companyProfileStorageKey = "influencer-smart:company-profile";
 
 const initialForm = {
@@ -36,7 +37,7 @@ function getInitialForm() {
   }
 }
 
-export default function CompanyProfilePage() {
+function CompanyProfileContent() {
   const [saved, setSaved] = useState(false);
   const [form, setForm] = useState(getInitialForm);
 
@@ -234,5 +235,14 @@ function InfoCard({ label, value }: InfoCardProps) {
       <p className="text-xs font-semibold uppercase tracking-wide text-[#0d0c15]/60">{label}</p>
       <p className="mt-1 text-xl font-black text-[#0d0c15]">{value}</p>
     </div>
+  );
+}
+
+
+export default function CompanyProfilePage() {
+  return (
+    <ProtectedRoute allowedRole="empresa">
+      <CompanyProfileContent />
+    </ProtectedRoute>
   );
 }

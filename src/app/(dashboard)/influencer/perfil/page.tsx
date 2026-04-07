@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { influencerProfile } from "@/shared/lib/mock-data";
+import { ProtectedRoute } from "@/shared/components/auth/protected-route";
 
 const influencerProfileStorageKey = "influencer-smart:influencer-profile";
 
@@ -37,14 +38,55 @@ function getInitialForm() {
   }
 }
 
-export default function InfluencerProfilePage() {
+function InfluencerProfileContent() {
   const [saved, setSaved] = useState(false);
   const [form, setForm] = useState(getInitialForm);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
+
+  function validateForm() {
+    const newErrors: Record<string, string> = {};
+
+    if (!form.fullName.trim()) {
+      newErrors.fullName = "El nombre completo es requerido";
+    }
+    if (!form.handle.trim() || !form.handle.startsWith("@")) {
+      newErrors.handle = "El handle debe comenzar con @";
+    }
+    if (!form.location.trim()) {
+      newErrors.location = "La ubicación es requerida";
+    }
+    if (!form.bio.trim() || form.bio.length < 20) {
+      newErrors.bio = "La biografía debe tener al menos 20 caracteres";
+    }
+    if (!form.estimatedPrice.trim()) {
+      newErrors.estimatedPrice = "El precio estimado es requerido";
+    }
+    if (categoriesList().length === 0) {
+      newErrors.categories = "Agrega al menos una categoría";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    localStorage.setItem(influencerProfileStorageKey, JSON.stringify(form));
-    setSaved(true);
+    setSaved(false);
+    
+    if (!validateForm()) {
+      return;
+    }
+
+    setLoading(true);
+    
+    setTimeout(() => {
+      localStorage.setItem(influencerProfileStorageKey, JSON.stringify(form));
+      setSaved(true);
+      setLoading(false);
+      
+      setTimeout(() => setSaved(false), 3000);
+    }, 500);
   }
 
   function categoriesList() {
@@ -90,8 +132,19 @@ export default function InfluencerProfilePage() {
 
         {saved ? (
           <p className="mt-4 rounded-xl border border-[#c1b8ff] bg-[#c1b8ff]/30 px-3 py-2 text-sm font-medium text-[#0d0c15]">
-            Cambios guardados en modo simulacion.
+            ✓ Cambios guardados en modo simulacion.
           </p>
+        ) : null}
+
+        {Object.keys(errors).length > 0 ? (
+          <div className="mt-4 rounded-xl border border-[#fed97b] bg-[#fed97b]/30 px-3 py-2 text-sm text-[#0d0c15]">
+            <p className="font-semibold">Corrige los siguientes errores:</p>
+            <ul className="mt-1 list-disc pl-5">
+              {Object.values(errors).map((error, i) => (
+                <li key={i}>{error}</li>
+              ))}
+            </ul>
+          </div>
         ) : null}
 
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -99,21 +152,25 @@ export default function InfluencerProfilePage() {
             label="Nombre completo"
             value={form.fullName}
             onChange={(value) => setForm((prev) => ({ ...prev, fullName: value }))}
+            error={errors.fullName}
           />
           <Field
             label="Handle"
             value={form.handle}
             onChange={(value) => setForm((prev) => ({ ...prev, handle: value }))}
+            error={errors.handle}
           />
           <Field
             label="Ubicacion"
             value={form.location}
             onChange={(value) => setForm((prev) => ({ ...prev, location: value }))}
+            error={errors.location}
           />
           <Field
             label="Precio estimado"
             value={form.estimatedPrice}
             onChange={(value) => setForm((prev) => ({ ...prev, estimatedPrice: value }))}
+            error={errors.estimatedPrice}
           />
         </div>
 
@@ -123,8 +180,13 @@ export default function InfluencerProfilePage() {
             rows={3}
             value={form.bio}
             onChange={(event) => setForm((prev) => ({ ...prev, bio: event.target.value }))}
-            className="mt-1 w-full rounded-xl border border-black/15 px-3 py-2.5 text-sm outline-none ring-[#c1b8ff] focus:ring-2"
+            className={`mt-1 w-full rounded-xl border px-3 py-2.5 text-sm outline-none focus:ring-2 ${
+              errors.bio
+                ? "border-red-400 ring-red-200"
+                : "border-black/15 ring-[#c1b8ff]"
+            }`}
           />
+          {errors.bio ? <span className="mt-1 text-xs text-red-600">{errors.bio}</span> : null}
         </label>
 
         <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -208,9 +270,10 @@ export default function InfluencerProfilePage() {
         <div className="mt-6">
           <button
             type="submit"
-            className="w-full rounded-xl bg-[#0d0c15] px-5 py-2.5 text-sm font-semibold text-white sm:w-auto"
+            disabled={loading}
+            className="w-full rounded-xl bg-[#0d0c15] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#1f1c30] disabled:opacity-50 sm:w-auto"
           >
-            Guardar cambios
+            {loading ? "Guardando..." : "Guardar cambios"}
           </button>
         </div>
       </form>
@@ -222,17 +285,21 @@ type FieldProps = {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  error?: string;
 };
 
-function Field({ label, value, onChange }: FieldProps) {
+function Field({ label, value, onChange, error }: FieldProps) {
   return (
     <label className="text-sm font-semibold text-[#0d0c15]">
       {label}
       <input
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-1 w-full rounded-xl border border-black/15 px-3 py-2.5 text-sm outline-none ring-[#c1b8ff] focus:ring-2"
+        className={`mt-1 w-full rounded-xl border px-3 py-2.5 text-sm outline-none focus:ring-2 ${
+          error ? "border-red-400 ring-red-200" : "border-black/15 ring-[#c1b8ff]"
+        }`}
       />
+      {error ? <span className="mt-1 text-xs text-red-600">{error}</span> : null}
     </label>
   );
 }
@@ -248,5 +315,13 @@ function InfoCard({ label, value }: InfoCardProps) {
       <p className="text-xs font-semibold uppercase tracking-wide text-[#0d0c15]/60">{label}</p>
       <p className="mt-1 text-xl font-black text-[#0d0c15]">{value}</p>
     </div>
+  );
+}
+
+export default function InfluencerProfilePage() {
+  return (
+    <ProtectedRoute allowedRole="influencer">
+      <InfluencerProfileContent />
+    </ProtectedRoute>
   );
 }

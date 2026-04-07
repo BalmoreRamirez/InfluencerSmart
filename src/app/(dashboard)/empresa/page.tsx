@@ -1,8 +1,11 @@
+"use client";
+
 import Link from "next/link";
+import { ProtectedRoute } from "@/shared/components/auth/protected-route";
 import { MetricCard } from "@/shared/components/ui/metric-card";
 import { campaignDraft, companyMetrics, suggestedInfluencers } from "@/shared/lib/mock-data";
 
-export default function CompanyDashboardPage() {
+function CompanyDashboardContent() {
   return (
     <main className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-6">
       <section className="rounded-3xl border border-black/10 bg-white p-6 sm:p-8">
@@ -91,5 +94,14 @@ export default function CompanyDashboardPage() {
         </article>
       </section>
     </main>
+  );
+}
+
+
+export default function CompanyDashboardPage() {
+  return (
+    <ProtectedRoute allowedRole="empresa">
+      <CompanyDashboardContent />
+    </ProtectedRoute>
   );
 }

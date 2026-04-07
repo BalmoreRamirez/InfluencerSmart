@@ -3,7 +3,7 @@
 import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { authenticateMockUser, mockUsers, saveMockSession } from "@/shared/lib/mock-auth";
+import { authenticateMockUser, saveMockSession } from "@/shared/lib/mock-auth";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -12,12 +12,6 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  function fillDemoCredentials(userEmail: string, userPassword: string) {
-    setEmail(userEmail);
-    setPassword(userPassword);
-    setError("");
-  }
-
   function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoading(true);
@@ -25,7 +19,7 @@ export default function LoginPage() {
 
     const user = authenticateMockUser(email, password);
     if (!user) {
-      setError("Credenciales invalidas. Revisa email y contrasena de prueba.");
+      setError("Credenciales inválidas. Verifica tu correo y contraseña.");
       setLoading(false);
       return;
     }
@@ -40,23 +34,10 @@ export default function LoginPage() {
         <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#0d0c15]/55">
           Acceso
         </p>
-        <h1 className="mt-3 text-3xl font-black text-[#0d0c15]">Iniciar sesion</h1>
+        <h1 className="mt-3 text-3xl font-black text-[#0d0c15]">Iniciar sesión</h1>
         <p className="mt-2 text-sm text-[#0d0c15]/70">
           Accede como influencer o representante de empresa.
         </p>
-
-        <div className="mt-4 grid gap-2 sm:grid-cols-2">
-          {mockUsers.map((user) => (
-            <button
-              key={user.email}
-              type="button"
-              onClick={() => fillDemoCredentials(user.email, user.password)}
-              className="rounded-xl border border-black/15 bg-[#f4f4f4] px-3 py-2 text-left text-xs font-semibold text-[#0d0c15] hover:bg-[#ececec]"
-            >
-              Usar perfil {user.role}
-            </button>
-          ))}
-        </div>
 
         <form onSubmit={handleLogin} className="mt-6 space-y-4">
           <label className="block text-sm font-medium text-[#0d0c15]">
@@ -66,16 +47,18 @@ export default function LoginPage() {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               placeholder="correo@empresa.com"
+              required
               className="mt-1 w-full rounded-xl border border-black/15 bg-white px-3 py-2.5 outline-none ring-[#c1b8ff] focus:ring-2"
             />
           </label>
           <label className="block text-sm font-medium text-[#0d0c15]">
-            Contrasena
+            Contraseña
             <input
               type="password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               placeholder="********"
+              required
               className="mt-1 w-full rounded-xl border border-black/15 bg-white px-3 py-2.5 outline-none ring-[#c1b8ff] focus:ring-2"
             />
           </label>
@@ -87,19 +70,38 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-[#0d0c15] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#1f1c30]"
+            className="w-full rounded-xl bg-[#0d0c15] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1f1c30] disabled:opacity-50"
           >
             {loading ? "Validando..." : "Entrar"}
           </button>
         </form>
 
         <p className="mt-5 text-sm text-[#0d0c15]/70">
-          No tienes cuenta?{" "}
+          ¿No tienes cuenta?{" "}
           <Link href="/registro" className="font-semibold text-[#0d0c15] underline">
-            Registrate aqui
+            Regístrate aquí
           </Link>
         </p>
       </section>
+
+      {/* Credenciales de prueba */}
+      <div className="mt-6 rounded-2xl border border-black/10 bg-[#f4f4f4] p-5">
+        <p className="text-xs font-semibold uppercase tracking-wide text-[#0d0c15]/60">
+          Credenciales de prueba
+        </p>
+        <div className="mt-3 space-y-2 text-sm text-[#0d0c15]/80">
+          <div>
+            <p className="font-semibold">Influencer:</p>
+            <p className="font-mono text-xs">influencer@influencersmart.dev</p>
+            <p className="font-mono text-xs">Influencer123!</p>
+          </div>
+          <div className="mt-2">
+            <p className="font-semibold">Empresa:</p>
+            <p className="font-mono text-xs">empresa@influencersmart.dev</p>
+            <p className="font-mono text-xs">Empresa123!</p>
+          </div>
+        </div>
+      </div>
     </main>
   );
 }

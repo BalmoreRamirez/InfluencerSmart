@@ -1,6 +1,33 @@
-import { activeChat, chatThread, conversations } from "@/shared/lib/mock-data";
+"use client";
 
-export default function ChatPage() {
+import { useState, FormEvent } from "react";
+import { activeChat, chatThread as initialChatThread, conversations } from "@/shared/lib/mock-data";
+import { AuthenticatedRoute } from "@/shared/components/auth/authenticated-route";
+
+function ChatPageContent() {
+  const [chatThread, setChatThread] = useState(initialChatThread);
+  const [message, setMessage] = useState("");
+  const [sending, setSending] = useState(false);
+
+  function handleSendMessage(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    
+    if (!message.trim() || sending) return;
+
+    setSending(true);
+    const newMessage = {
+      by: "influencer" as const,
+      text: message.trim(),
+      at: new Date().toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" }),
+    };
+
+    setTimeout(() => {
+      setChatThread((prev) => [...prev, newMessage]);
+      setMessage("");
+      setSending(false);
+    }, 500);
+  }
+
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
       <section className="grid w-full gap-4 lg:grid-cols-[320px_1fr]">
@@ -10,7 +37,7 @@ export default function ChatPage() {
             {conversations.map((chat) => (
               <li
                 key={chat.name}
-                className="min-w-[210px] rounded-2xl border border-black/10 px-3 py-2.5 hover:bg-[#f4f4f4] lg:min-w-0"
+                className="min-w-[210px] cursor-pointer rounded-2xl border border-black/10 px-3 py-2.5 hover:bg-[#f4f4f4] lg:min-w-0"
               >
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-sm font-semibold text-[#0d0c15]">{chat.name}</p>
@@ -32,12 +59,12 @@ export default function ChatPage() {
             <p className="text-xs text-[#0d0c15]/65">{activeChat.state}</p>
           </div>
 
-          <div className="flex-1 space-y-3 px-5 py-4">
-            {chatThread.map((message, index) => {
-              const isCompany = message.by === "empresa";
+          <div className="flex-1 space-y-3 overflow-y-auto px-5 py-4">
+            {chatThread.map((msg, index) => {
+              const isCompany = msg.by === "empresa";
               return (
                 <div
-                  key={message.text + index}
+                  key={msg.text + index}
                   className={`flex ${isCompany ? "justify-start" : "justify-end"}`}
                 >
                   <p
@@ -47,28 +74,40 @@ export default function ChatPage() {
                         : "bg-[#c1b8ff] text-[#0d0c15]"
                     }`}
                   >
-                    {message.text}
-                    <span className="mt-1 block text-[10px] opacity-70">{message.at}</span>
+                    {msg.text}
+                    <span className="mt-1 block text-[10px] opacity-70">{msg.at}</span>
                   </p>
                 </div>
               );
             })}
           </div>
 
-          <form className="flex flex-col gap-2 border-t border-black/10 p-4 sm:flex-row">
+          <form onSubmit={handleSendMessage} className="flex flex-col gap-2 border-t border-black/10 p-4 sm:flex-row">
             <input
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
               placeholder="Escribe tu mensaje..."
-              className="flex-1 rounded-xl border border-black/15 px-3 py-2.5 text-sm outline-none ring-[#c1b8ff] focus:ring-2"
+              disabled={sending}
+              className="flex-1 rounded-xl border border-black/15 px-3 py-2.5 text-sm outline-none ring-[#c1b8ff] focus:ring-2 disabled:opacity-50"
             />
             <button
-              type="button"
-              className="rounded-xl bg-[#0d0c15] px-4 py-2.5 text-sm font-semibold text-white sm:w-auto"
+              type="submit"
+              disabled={!message.trim() || sending}
+              className="rounded-xl bg-[#0d0c15] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#1f1c30] disabled:opacity-50 sm:w-auto"
             >
-              Enviar
+              {sending ? "Enviando..." : "Enviar"}
             </button>
           </form>
         </article>
       </section>
     </main>
+  );
+}
+
+export default function ChatPage() {
+  return (
+    <AuthenticatedRoute>
+      <ChatPageContent />
+    </AuthenticatedRoute>
   );
 }
