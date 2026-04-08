@@ -1,21 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { getMockSession, type MockRole } from "@/shared/lib/mock-auth";
+import { useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { type AppRole } from "@/shared/lib/firebase-collections";
+import { useAuthStore } from "@/shared/stores/auth-store";
 
 type ProtectedRouteProps = {
   children: React.ReactNode;
-  allowedRole: MockRole;
+  allowedRole: AppRole;
 };
 
 export function ProtectedRoute({ children, allowedRole }: ProtectedRouteProps) {
   const router = useRouter();
-  const [isAuthorized, setIsAuthorized] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const pathname = usePathname();
+  const session = useAuthStore((state) => state.session);
+  const isHydrated = useAuthStore((state) => state.isHydrated);
+  const hydrateSession = useAuthStore((state) => state.hydrateSession);
 
   useEffect(() => {
-    const session = getMockSession();
+    if (!isHydrated) {
+      hydrateSession();
+    }
+  }, [hydrateSession, isHydrated]);
+
+  useEffect(() => {
+    if (!isHydrated) return;
 
     if (!session) {
       // No hay sesión, redirigir a login
@@ -30,12 +39,20 @@ export function ProtectedRoute({ children, allowedRole }: ProtectedRouteProps) {
       return;
     }
 
-    // Autorizado
-    setIsAuthorized(true);
-    setIsLoading(false);
-  }, [router, allowedRole]);
+    if (!session.onboardingComplete) {
+      const onboardingPath = session.role === "influencer" ? "/influencer/perfil" : "/empresa/perfil";
+      if (pathname !== onboardingPath) {
+        router.push(onboardingPath);
+        return;
+      }
+    }
 
-  if (isLoading || !isAuthorized) {
+    // Autorizado
+  }, [router, pathname, allowedRole, session, isHydrated]);
+
+  const isAuthorized = Boolean(session && session.role === allowedRole);
+
+  if (!isHydrated || !isAuthorized) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">

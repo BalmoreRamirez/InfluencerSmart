@@ -1,23 +1,72 @@
-import Link from "next/link";
+"use client";
 
-const roles = [
-  {
-    title: "Soy Influencer",
-    description:
-      "Crea tu perfil, conecta Instagram, sube tu portafolio y registra servicios cerrados.",
-    href: "/influencer",
-    color: "bg-[#c1b8ff]",
-  },
-  {
-    title: "Soy Empresa",
-    description:
-      "Busca influencers por filtros, envia brief por chat y gestiona creditos para contactar.",
-    href: "/empresa",
-    color: "bg-[#fed97b]",
-  },
-];
+import { FormEvent, useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { type AppRole } from "@/shared/lib/firebase-collections";
+import { useAuthStore } from "@/shared/stores/auth-store";
 
 export default function RegisterPage() {
+  const router = useRouter();
+  const register = useAuthStore((state) => state.register);
+  const session = useAuthStore((state) => state.session);
+  const isHydrated = useAuthStore((state) => state.isHydrated);
+  const hydrateSession = useAuthStore((state) => state.hydrateSession);
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState<AppRole>("influencer");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isHydrated) {
+      hydrateSession();
+    }
+  }, [hydrateSession, isHydrated]);
+
+  useEffect(() => {
+    if (!isHydrated || !session) return;
+    const redirectTo = session.onboardingComplete
+      ? (session.role === "influencer" ? "/influencer" : "/empresa")
+      : (session.role === "influencer" ? "/influencer/perfil" : "/empresa/perfil");
+    router.push(redirectTo);
+  }, [isHydrated, session, router]);
+
+  async function handleRegister(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      await register({
+        username,
+        email,
+        password,
+        role,
+      });
+      router.push(role === "influencer" ? "/influencer/perfil" : "/empresa/perfil");
+    } catch (registerError) {
+      const message =
+        registerError instanceof Error
+          ? registerError.message
+          : "No se pudo completar el registro.";
+      setError(message);
+      setLoading(false);
+    }
+  }
+
+  if (!isHydrated || session) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-[#c1b8ff] border-t-transparent" />
+          <p className="mt-4 text-sm text-[#0d0c15]/60">Cargando...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <main className="mx-auto w-full max-w-4xl px-5 py-10 sm:px-6">
       <section className="rounded-3xl border border-black/10 bg-white p-7 sm:p-9">
@@ -31,21 +80,79 @@ export default function RegisterPage() {
           Elige el tipo de cuenta y continua con onboarding orientado a tu flujo.
         </p>
 
-        <div className="mt-7 grid gap-4 sm:grid-cols-2">
-          {roles.map((role) => (
-            <article key={role.title} className="rounded-2xl border border-black/10 p-5">
-              <div className={`h-2 w-20 rounded-full ${role.color}`} />
-              <h2 className="mt-3 text-xl font-bold text-[#0d0c15]">{role.title}</h2>
-              <p className="mt-2 text-sm text-[#0d0c15]/70">{role.description}</p>
-              <Link
-                href={role.href}
-                className="mt-4 inline-flex rounded-full bg-[#0d0c15] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1f1c30]"
-              >
-                Continuar
-              </Link>
-            </article>
-          ))}
-        </div>
+        <form onSubmit={handleRegister} className="mt-7 grid gap-4">
+          <label className="text-sm font-semibold text-[#0d0c15]">
+            Username unico
+            <input
+              value={username}
+              onChange={(event) => setUsername(event.target.value)}
+              placeholder="valeriatech"
+              required
+              className="mt-1 w-full rounded-xl border border-black/15 px-3 py-2.5 text-sm outline-none ring-[#c1b8ff] focus:ring-2"
+            />
+          </label>
+          <label className="text-sm font-semibold text-[#0d0c15]">
+            Correo
+            <input
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="correo@dominio.com"
+              required
+              className="mt-1 w-full rounded-xl border border-black/15 px-3 py-2.5 text-sm outline-none ring-[#c1b8ff] focus:ring-2"
+            />
+          </label>
+          <label className="text-sm font-semibold text-[#0d0c15]">
+            Contrasena
+            <input
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              minLength={6}
+              required
+              className="mt-1 w-full rounded-xl border border-black/15 px-3 py-2.5 text-sm outline-none ring-[#c1b8ff] focus:ring-2"
+            />
+          </label>
+          <fieldset className="rounded-2xl border border-black/10 p-4">
+            <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-[#0d0c15]/60">
+              Tipo de cuenta
+            </legend>
+            <div className="mt-2 grid gap-2 sm:grid-cols-2">
+              <label className="flex items-center gap-2 rounded-xl border border-black/10 px-3 py-2 text-sm">
+                <input
+                  type="radio"
+                  name="role"
+                  checked={role === "influencer"}
+                  onChange={() => setRole("influencer")}
+                />
+                Influencer
+              </label>
+              <label className="flex items-center gap-2 rounded-xl border border-black/10 px-3 py-2 text-sm">
+                <input
+                  type="radio"
+                  name="role"
+                  checked={role === "empresa"}
+                  onChange={() => setRole("empresa")}
+                />
+                Empresa
+              </label>
+            </div>
+          </fieldset>
+
+          {error ? (
+            <p className="rounded-xl border border-[#fed97b] bg-[#fed97b]/30 px-3 py-2 text-sm text-[#0d0c15]">
+              {error}
+            </p>
+          ) : null}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="inline-flex justify-center rounded-full bg-[#0d0c15] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#1f1c30] disabled:opacity-50"
+          >
+            {loading ? "Creando cuenta..." : "Crear cuenta"}
+          </button>
+        </form>
 
         <p className="mt-6 text-sm text-[#0d0c15]/70">
           Ya tienes cuenta?{" "}

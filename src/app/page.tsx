@@ -1,26 +1,33 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getMockSession } from "@/shared/lib/mock-auth";
+import { useAuthStore } from "@/shared/stores/auth-store";
 
 export default function Home() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(true);
+  const session = useAuthStore((state) => state.session);
+  const isHydrated = useAuthStore((state) => state.isHydrated);
+  const hydrateSession = useAuthStore((state) => state.hydrateSession);
 
   useEffect(() => {
-    const session = getMockSession();
+    if (!isHydrated) {
+      hydrateSession();
+    }
+  }, [hydrateSession, isHydrated]);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+
     if (session) {
       // Si hay sesión activa, redirigir a su dashboard
       const redirectTo = session.role === "influencer" ? "/influencer" : "/empresa";
       router.push(redirectTo);
-    } else {
-      setIsLoading(false);
     }
-  }, [router]);
+  }, [router, session, isHydrated]);
 
-  if (isLoading) {
+  if (!isHydrated || session) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">

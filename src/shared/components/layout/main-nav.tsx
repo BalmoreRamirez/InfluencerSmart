@@ -1,29 +1,61 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import Image from "next/image";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getMockSession, clearMockSession } from "@/shared/lib/mock-auth";
+import { companyProfile, influencerProfile } from "@/shared/lib/mock-data";
+import { useAuthStore } from "@/shared/stores/auth-store";
+import { useChatStore } from "@/shared/stores/chat-store";
 
 const navItems = [
   { href: "/", label: "Inicio" },
   { href: "/explorar", label: "Explorar" },
 ];
 
+function MessageIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4" fill="none">
+      <path
+        d="M6 7.5h12c1.1 0 2 .9 2 2v7c0 1.1-.9 2-2 2H8l-4 3v-12c0-1.1.9-2 2-2Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M8.5 11.25h7M8.5 14h4.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export function MainNav() {
   const router = useRouter();
-  const [session, setSession] = useState<ReturnType<typeof getMockSession>>(null);
+  const session = useAuthStore((state) => state.session);
+  const isHydrated = useAuthStore((state) => state.isHydrated);
+  const hydrateSession = useAuthStore((state) => state.hydrateSession);
+  const logout = useAuthStore((state) => state.logout);
+  const conversations = useChatStore((state) => state.conversations);
 
   useEffect(() => {
-    setSession(getMockSession());
-  }, []);
+    if (!isHydrated) {
+      hydrateSession();
+    }
+  }, [hydrateSession, isHydrated]);
 
-  function handleLogout() {
-    clearMockSession();
-    setSession(null);
+  async function handleLogout() {
+    await logout();
     router.push("/");
     router.refresh();
   }
+
+  const sessionAvatarUrl =
+    session?.role === "influencer"
+      ? (influencerProfile.avatarUrl ?? "/avatars/influencer-example.svg")
+      : (companyProfile.avatarUrl ?? "/avatars/company-example.svg");
+
+  const sessionRoleLabel = session?.role === "influencer" ? "Influencer" : "Empresa";
+  const unreadMessages = conversations.reduce((total, item) => total + item.unread, 0);
+  const unreadLabel = unreadMessages > 99 ? "99+" : String(unreadMessages);
 
   return (
     <header className="sticky top-0 z-40 border-b border-black/10 bg-white backdrop-blur-lg">
@@ -48,13 +80,32 @@ export function MainNav() {
                 {item.label}
               </Link>
             ))}
+            <Link
+              href="/chat"
+              className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-[#0d0c15]/80 transition hover:bg-[#f4f4f4] hover:text-[#0d0c15]"
+            >
+              <MessageIcon />
+              Mensajes
+              {unreadMessages > 0 ? (
+                <span className="rounded-full bg-[#fed97b] px-2 py-0.5 text-xs font-bold text-[#0d0c15]">
+                  {unreadLabel}
+                </span>
+              ) : null}
+            </Link>
           </nav>
 
           <div className="flex items-center gap-3">
             {session ? (
               <>
-                <span className="rounded-full bg-[#c1b8ff]/30 px-4 py-2 text-sm font-medium text-[#0d0c15]">
-                  {session.role === "influencer" ? "🎨 Influencer" : "🏢 Empresa"}
+                <span className="inline-flex items-center gap-2 rounded-full bg-[#c1b8ff]/30 px-3 py-1.5 text-sm font-medium text-[#0d0c15]">
+                  <Image
+                    src={sessionAvatarUrl}
+                    alt={`Perfil de ${sessionRoleLabel}`}
+                    width={28}
+                    height={28}
+                    className="h-7 w-7 rounded-full border border-black/10 object-cover"
+                  />
+                  {sessionRoleLabel}
                 </span>
                 <button
                   onClick={handleLogout}
@@ -98,12 +149,33 @@ export function MainNav() {
                   {item.label}
                 </Link>
               ))}
+              <Link
+                href="/chat"
+                className="inline-flex items-center justify-between rounded-xl px-4 py-2.5 text-sm font-medium text-[#0d0c15]/80 transition hover:bg-[#f4f4f4]"
+              >
+                <span className="inline-flex items-center gap-2">
+                  <MessageIcon />
+                  Mensajes
+                </span>
+                {unreadMessages > 0 ? (
+                  <span className="rounded-full bg-[#fed97b] px-2 py-0.5 text-xs font-bold text-[#0d0c15]">
+                    {unreadLabel}
+                  </span>
+                ) : null}
+              </Link>
             </nav>
             <div className="mt-2 grid gap-1 border-t border-black/10 pt-2">
               {session ? (
                 <>
-                  <div className="rounded-xl bg-[#c1b8ff]/20 px-4 py-2.5 text-center text-sm font-medium text-[#0d0c15]">
-                    {session.role === "influencer" ? "🎨 Influencer" : "🏢 Empresa"}
+                  <div className="flex items-center justify-center gap-2 rounded-xl bg-[#c1b8ff]/20 px-4 py-2.5 text-center text-sm font-medium text-[#0d0c15]">
+                    <Image
+                      src={sessionAvatarUrl}
+                      alt={`Perfil de ${sessionRoleLabel}`}
+                      width={28}
+                      height={28}
+                      className="h-7 w-7 rounded-full border border-black/10 object-cover"
+                    />
+                    {sessionRoleLabel}
                   </div>
                   <button
                     onClick={handleLogout}

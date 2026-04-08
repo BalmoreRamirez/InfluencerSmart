@@ -1,0 +1,119 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function userDoc(uid) {
+      return get(/databases/$(database)/documents/users/$(uid));
+    }
+
+    function userExists(uid) {
+      return exists(/databases/$(database)/documents/users/$(uid));
+    }
+
+    function isInfluencer(uid) {
+      return userExists(uid) && userDoc(uid).data.role == "influencer";
+    }
+
+    function isCompany(uid) {
+      return userExists(uid) && userDoc(uid).data.role == "company";
+    }
+
+    function isChatParticipantByData(data) {
+      return signedIn() && (request.auth.uid in data.participants);
+    }
+
+    match /usernames/{username} {
+      allow get: if true;
+      allow list: if false;
+      allow create: if signedIn()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.created_at == request.time
+        && !exists(/databases/$(database)/documents/usernames/$(username));
+      allow update, delete: if false;
+    }
+
+    match /users/{uid} {
+      allow read: if isOwner(uid);
+      allow create: if isOwner(uid)
+        && request.resource.data.email is string
+        && request.resource.data.username is string
+        && request.resource.data.profile_image is string
+        && request.resource.data.onboarding_complete is bool
+        && request.resource.data.role in ["influencer", "company"]
+        && request.resource.data.created_at == request.time
+        && get(/databases/$(database)/documents/usernames/$(request.resource.data.username)).data.uid == uid;
+      allow update: if isOwner(uid)
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.username == resource.data.username
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.created_at == resource.data.created_at;
+      allow delete: if false;
+    }
+
+    match /influencers/{uid} {
+      allow read: if true;
+      allow create, update: if isOwner(uid) && isInfluencer(uid);
+      allow delete: if false;
+
+      match /portfolio/{projectId} {
+        allow read: if true;
+        allow create, update, delete: if isOwner(uid) && isInfluencer(uid);
+      }
+    }
+
+    match /companies/{uid} {
+      allow read: if isOwner(uid);
+      allow create, update: if isOwner(uid) && isCompany(uid);
+      allow delete: if false;
+    }
+
+    match /chats/{chatId} {
+      allow read: if isChatParticipantByData(resource.data);
+      allow create: if isChatParticipantByData(request.resource.data)
+        && request.resource.data.participants is list
+        && request.resource.data.participants.size() == 2
+        && request.resource.data.last_message is string
+        && request.resource.data.is_unlocked is bool
+        && request.resource.data.updated_at == request.time;
+      allow update: if isChatParticipantByData(resource.data)
+        && request.resource.data.participants == resource.data.participants;
+      allow delete: if false;
+
+      match /messages/{messageId} {
+        allow read: if isChatParticipantByData(
+          get(/databases/$(database)/documents/chats/$(chatId)).data
+        );
+        allow create: if signedIn()
+          && request.resource.data.sender_id == request.auth.uid
+          && request.resource.data.text is string
+          && request.resource.data.timestamp == request.time
+          && isChatParticipantByData(
+            get(/databases/$(database)/documents/chats/$(chatId)).data
+          );
+        allow update, delete: if false;
+      }
+    }
+
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if signedIn()
+        && isCompany(request.auth.uid)
+        && request.resource.data.company_id == request.auth.uid
+        && request.resource.data.influencer_id is string
+        && request.resource.data.comment is string
+        && request.resource.data.rating is int
+        && request.resource.data.rating >= 1
+        && request.resource.data.rating <= 5
+        && request.resource.data.created_at == request.time;
+      allow update, delete: if false;
+    }
+  }
+}
+

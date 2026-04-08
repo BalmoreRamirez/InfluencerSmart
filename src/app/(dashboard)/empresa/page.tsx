@@ -5,6 +5,10 @@ import { ProtectedRoute } from "@/shared/components/auth/protected-route";
 import { MetricCard } from "@/shared/components/ui/metric-card";
 import { campaignDraft, companyMetrics, suggestedInfluencers } from "@/shared/lib/mock-data";
 
+function toContactId(name: string) {
+  return `influencer-${name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
+}
+
 function CompanyDashboardContent() {
   return (
     <main className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-6">
@@ -63,7 +67,10 @@ function CompanyDashboardContent() {
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-bold text-[#0d0c15]">{item.price}</p>
-                  <Link href="/chat" className="text-xs font-semibold text-[#0d0c15] underline">
+                  <Link
+                    href={`/chat?contactId=${encodeURIComponent(toContactId(item.name))}&contactName=${encodeURIComponent(item.name)}`}
+                    className="text-xs font-semibold text-[#0d0c15] underline"
+                  >
                     Contactar
                   </Link>
                 </div>

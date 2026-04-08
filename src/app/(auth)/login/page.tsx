@@ -1,31 +1,60 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { authenticateMockUser, saveMockSession } from "@/shared/lib/mock-auth";
+import { useAuthStore } from "@/shared/stores/auth-store";
 
 export default function LoginPage() {
   const router = useRouter();
+  const login = useAuthStore((state) => state.login);
+  const session = useAuthStore((state) => state.session);
+  const isHydrated = useAuthStore((state) => state.isHydrated);
+  const hydrateSession = useAuthStore((state) => state.hydrateSession);
+  const authError = useAuthStore((state) => state.authError);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  function handleLogin(event: FormEvent<HTMLFormElement>) {
+  useEffect(() => {
+    if (!isHydrated) {
+      hydrateSession();
+    }
+  }, [hydrateSession, isHydrated]);
+
+  useEffect(() => {
+    if (!isHydrated || !session) return;
+    const redirectTo = session.onboardingComplete
+      ? (session.role === "influencer" ? "/influencer" : "/empresa")
+      : (session.role === "influencer" ? "/influencer/perfil" : "/empresa/perfil");
+    router.push(redirectTo);
+  }, [isHydrated, session, router]);
+
+  async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoading(true);
     setError("");
 
-    const user = authenticateMockUser(email, password);
-    if (!user) {
-      setError("Credenciales inválidas. Verifica tu correo y contraseña.");
+    try {
+      await login(email, password);
       setLoading(false);
-      return;
+    } catch (loginError) {
+      const message = loginError instanceof Error ? loginError.message : "Error al iniciar sesion.";
+      setError(message);
+      setLoading(false);
     }
+  }
 
-    saveMockSession(user);
-    router.push(user.redirectTo);
+  if (!isHydrated || session) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-[#c1b8ff] border-t-transparent" />
+          <p className="mt-4 text-sm text-[#0d0c15]/60">Cargando...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -84,22 +113,14 @@ export default function LoginPage() {
         </p>
       </section>
 
-      {/* Credenciales de prueba */}
+      {/* Estado de configuracion */}
       <div className="mt-6 rounded-2xl border border-black/10 bg-[#f4f4f4] p-5">
         <p className="text-xs font-semibold uppercase tracking-wide text-[#0d0c15]/60">
-          Credenciales de prueba
+          Configuracion de autenticacion
         </p>
         <div className="mt-3 space-y-2 text-sm text-[#0d0c15]/80">
-          <div>
-            <p className="font-semibold">Influencer:</p>
-            <p className="font-mono text-xs">influencer@influencersmart.dev</p>
-            <p className="font-mono text-xs">Influencer123!</p>
-          </div>
-          <div className="mt-2">
-            <p className="font-semibold">Empresa:</p>
-            <p className="font-mono text-xs">empresa@influencersmart.dev</p>
-            <p className="font-mono text-xs">Empresa123!</p>
-          </div>
+          <p>Este login usa Firebase Authentication.</p>
+          {authError ? <p className="text-xs text-red-700">{authError}</p> : null}
         </div>
       </div>
     </main>

@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getMockSession } from "@/shared/lib/mock-auth";
+import { useAuthStore } from "@/shared/stores/auth-store";
 
 type AuthenticatedRouteProps = {
   children: React.ReactNode;
@@ -10,11 +10,18 @@ type AuthenticatedRouteProps = {
 
 export function AuthenticatedRoute({ children }: AuthenticatedRouteProps) {
   const router = useRouter();
-  const [isAuthorized, setIsAuthorized] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const session = useAuthStore((state) => state.session);
+  const isHydrated = useAuthStore((state) => state.isHydrated);
+  const hydrateSession = useAuthStore((state) => state.hydrateSession);
 
   useEffect(() => {
-    const session = getMockSession();
+    if (!isHydrated) {
+      hydrateSession();
+    }
+  }, [hydrateSession, isHydrated]);
+
+  useEffect(() => {
+    if (!isHydrated) return;
 
     if (!session) {
       // No hay sesión, redirigir a login
@@ -23,11 +30,9 @@ export function AuthenticatedRoute({ children }: AuthenticatedRouteProps) {
     }
 
     // Autorizado (cualquier rol)
-    setIsAuthorized(true);
-    setIsLoading(false);
-  }, [router]);
+  }, [router, session, isHydrated]);
 
-  if (isLoading || !isAuthorized) {
+  if (!isHydrated || !session) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">

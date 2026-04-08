@@ -8,6 +8,7 @@ Plataforma que conecta influencers con empresas para colaboraciones efectivas y 
 - React 19.2.4
 - TypeScript 5
 - Tailwind CSS 4
+- Firebase Web SDK
 - Sistema de datos simulados (mock data)
 
 ## Funcionalidades del MVP
@@ -69,21 +70,14 @@ Plataforma que conecta influencers con empresas para colaboraciones efectivas y 
 
 ### Credenciales de Acceso
 
-**Perfil Influencer:**
-- Email: `influencer@influencersmart.dev`
-- Password: `Influencer123!`
+No hay cuentas precargadas.
 
-**Perfil Empresa:**
-- Email: `empresa@influencersmart.dev`
-- Password: `Empresa123!`
+- Crea usuarios desde `Registro` (`/registro`) usando Firebase Authentication.
+- El sistema inicia sin datos de prueba y genera perfiles desde cero.
 
 ### Datos Simulados
 
-- **20+ influencers** de diversos países (México, Colombia, España, Argentina, Chile, Perú)
-- **15+ categorías** (Tecnología, Fitness, Gastronomía, Viajes, Gaming, Belleza, etc.)
-- **25 reviews** distribuidas entre influencers
-- **10 conversaciones** de ejemplo
-- **Métricas de Instagram** simuladas para el perfil principal
+- Datos semilla deshabilitados para iniciar operación desde cero.
 
 ## Instalación y Uso
 
@@ -112,6 +106,98 @@ npm run build   # Build de producción
 npm run start   # Servidor de producción
 npm run lint    # Ejecutar ESLint
 ```
+
+## Firebase
+
+La app ya incluye inicializacion base de Firebase en `src/shared/lib/firebase.ts`.
+
+Variables requeridas en `.env`:
+
+```dotenv
+NEXT_PUBLIC_FIREBASE_API_KEY=...
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=...
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=...
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=...
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
+NEXT_PUBLIC_FIREBASE_APP_ID=...
+```
+
+Uso basico:
+
+```ts
+import { app } from "@/shared/lib/firebase";
+
+if (!app) {
+  throw new Error("Firebase no esta configurado");
+}
+```
+
+Reglas de Firestore incluidas en `firestore.rules`.
+
+- Se agrega la coleccion `usernames` para reservar usernames unicos sin exponer la coleccion `users`.
+- `users/{uid}` solo permite lectura/escritura del propio usuario.
+- `influencers/{uid}` lectura publica; `companies/{uid}` lectura privada del propietario.
+- `chats` y `messages` solo para participantes del chat.
+
+Publicar reglas (si usas Firebase CLI):
+
+```bash
+npm run firebase:rules:check
+npm run firebase:login
+npm run firebase:rules:deploy
+```
+
+Archivos de configuracion usados para deploy:
+
+- `firebase.json`
+- `.firebaserc` (proyecto default: `influencersmart-d6a3b`)
+
+## Modelo de Colecciones (Analisis)
+
+### 1) `users` (ancla de identidad)
+
+- ID del documento = `uid` de Firebase Auth.
+- Campos: `username`, `email`, `role` (`influencer` o `company`), `profile_image`, `onboarding_complete`, `created_at`.
+- Recomendacion: crear indice/constraint logico para `username` unico (validado en app + regla/Cloud Function).
+
+### 2) `influencers` (busqueda publica)
+
+- ID del documento = mismo `uid` del usuario influencer.
+- Campos: `full_name`, `birth_date`, `dui`, `location`, `category`, `is_premium`, `metrics`, `prices`.
+- Subcoleccion: `portfolio/{projectId}` con `image_url`, `link`, `description`.
+- Ventaja: consultas de descubrimiento mas baratas para empresas sin leer datos privados de `users`.
+
+### 3) `companies` (datos corporativos)
+
+- ID del documento = mismo `uid` del usuario empresa.
+- Campos: `company_name`, `category`, `products`, `address`, `company_code`, `country`, `credits`.
+- Campo critico: `credits` se debe modificar solo en transacciones (compra/consumo de creditos).
+
+### 4) `chats` (interacciones)
+
+- ID recomendado: `uidCompany_uidInfluencer` para evitar duplicados.
+- Campos: `participants`, `is_unlocked`, `last_message`, `updated_at`.
+- Subcoleccion: `messages/{messageId}` con `sender_id`, `text`, `timestamp`.
+- Recomendacion: cuando se envia mensaje, actualizar `last_message` y `updated_at` en el documento padre del chat.
+
+### 5) `reviews` (reputacion)
+
+- Campos: `influencer_id`, `company_id`, `rating`, `comment`, `created_at`.
+- Recomendacion: evitar reviews duplicadas por campana usando un campo `campaign_id` o id compuesto.
+
+### Indices sugeridos
+
+- `influencers`: `category ASC, is_premium DESC`.
+- `influencers`: `location ASC, is_premium DESC`.
+- `chats`: `participants ARRAY_CONTAINS, updated_at DESC`.
+- `reviews`: `influencer_id ASC, created_at DESC`.
+
+### Reglas de seguridad (resumen)
+
+- `users/{uid}`: solo `request.auth.uid == uid` puede leer/escribir su documento.
+- `influencers/{uid}` y `companies/{uid}`: solo dueno escribe; lectura publica segun necesidad del negocio.
+- `chats/{chatId}`: solo participantes pueden leer/escribir mensajes.
+- `reviews`: solo empresas autenticadas crean; influencer solo lectura.
 
 ## Estructura del Proyecto
 
@@ -164,7 +250,7 @@ src/
 ⚠️ **Este es un MVP con funcionalidad simulada:**
 
 - No hay backend real (todo funciona con mock data)
-- La autenticación es simulada (sin JWT ni sesiones reales)
+- Autenticacion con Firebase (sin backend propio para reglas de negocio avanzadas)
 - Los datos se guardan en localStorage (se pierden al limpiar caché)
 - No hay integración real con Instagram API
 - Los filtros funcionan solo con los 20 influencers de prueba
