@@ -283,15 +283,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
         text: message.trim(),
       }).catch(() => undefined);
 
-      const now = new Date().toLocaleTimeString("es-MX", {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-
       set((state) => ({
         message: "",
         sending: false,
-        chatThread: [...state.chatThread, { by: currentUserRole, text: message.trim(), at: now }],
         conversations: state.conversations.map((item) =>
           item.id === activeConversationId
             ? { ...item, last: message.trim() }

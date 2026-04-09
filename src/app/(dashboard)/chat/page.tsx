@@ -15,6 +15,7 @@ function ChatPageContent() {
   const sending = useChatStore((state) => state.sending);
   const connected = useChatStore((state) => state.connected);
   const conversations = useChatStore((state) => state.conversations);
+  const activeConversationId = useChatStore((state) => state.activeConversationId);
   const activeContactName = useChatStore((state) => state.activeContactName);
   const setMessage = useChatStore((state) => state.setMessage);
   const setActiveConversation = useChatStore((state) => state.setActiveConversation);
@@ -47,8 +48,15 @@ function ChatPageContent() {
     startConversation({ contactId, contactName }).catch(() => undefined);
   }, [searchParams, session, startConversation]);
 
-  function handleSendMessage(event: FormEvent<HTMLFormElement>) {
+  async function handleSendMessage(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!activeConversationId && session?.role === "empresa") {
+      const contactId = searchParams.get("contactId")?.trim();
+      const contactName = searchParams.get("contactName")?.trim();
+      if (contactId && contactName) {
+        await startConversation({ contactId, contactName }).catch(() => undefined);
+      }
+    }
     sendMessage();
   }
 
@@ -86,7 +94,9 @@ function ChatPageContent() {
           <div className="border-b border-black/10 px-5 py-4">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-sm font-semibold text-[#0d0c15]">{activeContactName}</p>
+                <p className="text-sm font-semibold text-[#0d0c15]">
+                  {activeContactName ?? searchParams.get("contactName") ?? "Selecciona una conversación"}
+                </p>
                 <p className="text-xs text-[#0d0c15]/65">Negociacion activa</p>
               </div>
               <span
