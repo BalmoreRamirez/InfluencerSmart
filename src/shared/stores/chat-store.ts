@@ -57,10 +57,6 @@ type ChatState = {
   resetThread: () => void;
 };
 
-function oppositeRole(role: ChatRole): ChatRole {
-  return role === "empresa" ? "influencer" : "empresa";
-}
-
 export const useChatStore = create<ChatState>((set, get) => ({
   chatThread: EMPTY_THREAD,
   message: "",
@@ -76,7 +72,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     const { currentUserId, currentUserName, currentUserRole } = get();
     if (!currentUserId || !currentUserName || !currentUserRole) return;
 
-    const normalizedContactId = contactId.trim().toLowerCase();
+    const normalizedContactId = contactId.trim();
     const normalizedContactName = contactName.trim();
     if (!normalizedContactId || !normalizedContactName) return;
 
@@ -287,13 +283,24 @@ export const useChatStore = create<ChatState>((set, get) => ({
         text: message.trim(),
       }).catch(() => undefined);
 
-      set({
+      const now = new Date().toLocaleTimeString("es-MX", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+
+      set((state) => ({
         message: "",
         sending: false,
-      });
+        chatThread: [...state.chatThread, { by: currentUserRole, text: message.trim(), at: now }],
+        conversations: state.conversations.map((item) =>
+          item.id === activeConversationId
+            ? { ...item, last: message.trim() }
+            : item
+        ),
+      }));
     } catch {
       const failedMessage: ChatMessage = {
-        by: oppositeRole(currentUserRole),
+        by: currentUserRole,
         text: "No se pudo enviar el mensaje. Reintenta.",
         at: "--:--",
       };
