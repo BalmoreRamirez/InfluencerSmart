@@ -15,7 +15,7 @@ function ChatPageContent() {
   const conversations = useChatStore((state) => state.conversations);
   const activeContactName = useChatStore((state) => state.activeContactName);
   const setMessage = useChatStore((state) => state.setMessage);
-  const setActiveContact = useChatStore((state) => state.setActiveContact);
+  const setActiveConversation = useChatStore((state) => state.setActiveConversation);
   const sendMessage = useChatStore((state) => state.sendMessage);
   const initializeChat = useChatStore((state) => state.initializeChat);
   const disconnectChat = useChatStore((state) => state.disconnectChat);
@@ -24,15 +24,15 @@ function ChatPageContent() {
     if (!session) return;
 
     initializeChat({
-      userId: session.email,
+      userId: session.uid,
+      userName: session.username,
       role: session.role,
-      contactId: activeContactName,
     });
 
     return () => {
       disconnectChat();
     };
-  }, [activeContactName, disconnectChat, initializeChat, session]);
+  }, [disconnectChat, initializeChat, session]);
 
   function handleSendMessage(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -48,7 +48,7 @@ function ChatPageContent() {
             {conversations.map((chat) => (
               <li
                 key={chat.name}
-                onClick={() => setActiveContact(chat.name)}
+                onClick={() => setActiveConversation(chat.id)}
                 className={`min-w-[210px] cursor-pointer rounded-2xl border px-3 py-2.5 lg:min-w-0 ${
                   activeContactName === chat.name
                     ? "border-[#0d0c15]/25 bg-[#f4f4f4]"

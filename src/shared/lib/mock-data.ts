@@ -16,6 +16,7 @@ export type InfluencerProfile = {
 
 export type InfluencerDetailedProfile = {
   fullName: string;
+  avatarUrl?: string;
   handle: string;
   location: string;
   categories: string[];
@@ -43,6 +44,7 @@ export type InfluencerDetailedProfile = {
 
 export type CompanyProfile = {
   name: string;
+  avatarUrl?: string;
   industry: string;
   country: string;
   city: string;
