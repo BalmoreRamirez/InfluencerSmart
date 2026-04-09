@@ -1,16 +1,45 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useMemo } from "react";
-import { influencers } from "@/shared/lib/mock-data";
+import { useEffect, useMemo, useState } from "react";
+import { listPublicInfluencers, type PublicInfluencerCard } from "@/shared/services/firebase-influencers-service";
 
 export default function ExplorePage() {
+  const [influencers, setInfluencers] = useState<PublicInfluencerCard[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [filters, setFilters] = useState({
     country: "Todos",
     category: "Todas",
     minFollowers: "0",
     maxPrice: "10000",
   });
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadInfluencers() {
+      setLoading(true);
+      setLoadError(null);
+      const rows = await listPublicInfluencers();
+      if (!cancelled) {
+        setInfluencers(rows);
+        setLoading(false);
+      }
+    }
+
+    loadInfluencers().catch(() => {
+      if (!cancelled) {
+        setInfluencers([]);
+        setLoading(false);
+        setLoadError("No se pudieron cargar influencers desde la base de datos.");
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const countries = ["Todos", ...Array.from(new Set(influencers.map((i) => i.country)))];
   const categories = ["Todas", ...Array.from(new Set(influencers.map((i) => i.category)))];
@@ -22,15 +51,13 @@ export default function ExplorePage() {
       const matchesCategory =
         filters.category === "Todas" || profile.category === filters.category;
 
-      const followersNum = parseFloat(profile.followers.replace("k", "")) * 1000;
-      const matchesFollowers = followersNum >= parseFloat(filters.minFollowers);
+      const matchesFollowers = profile.followersCount >= parseFloat(filters.minFollowers);
 
-      const priceNum = parseFloat(profile.price.replace("$", "").replace(" USD", ""));
-      const matchesPrice = priceNum <= parseFloat(filters.maxPrice);
+      const matchesPrice = profile.priceUsd <= parseFloat(filters.maxPrice);
 
       return matchesCountry && matchesCategory && matchesFollowers && matchesPrice;
     });
-  }, [filters]);
+  }, [filters, influencers]);
 
   return (
     <main className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-6">
@@ -73,8 +100,9 @@ export default function ExplorePage() {
 
         <div className="mt-4 flex items-center justify-between">
           <p className="text-sm text-[#0d0c15]/60">
-            {filteredInfluencers.length} influencer{filteredInfluencers.length !== 1 ? "s" : ""}{" "}
-            encontrado{filteredInfluencers.length !== 1 ? "s" : ""}
+            {loading
+              ? "Cargando influencers..."
+              : `${filteredInfluencers.length} influencer${filteredInfluencers.length !== 1 ? "s" : ""} encontrado${filteredInfluencers.length !== 1 ? "s" : ""}`}
           </p>
           <button
             onClick={() =>
@@ -92,10 +120,16 @@ export default function ExplorePage() {
         </div>
       </section>
 
+      {loadError ? (
+        <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+          {loadError}
+        </p>
+      ) : null}
+
       <section className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {filteredInfluencers.map((profile) => (
           <article
-            key={profile.name}
+            key={profile.id}
             className="rounded-2xl border border-black/10 bg-white p-5 shadow-[0_8px_24px_rgba(13,12,21,0.08)]"
           >
             <div className="flex items-center justify-between">
