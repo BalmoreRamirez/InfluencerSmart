@@ -33,12 +33,29 @@ export function MainNav() {
   const hydrateSession = useAuthStore((state) => state.hydrateSession);
   const logout = useAuthStore((state) => state.logout);
   const conversations = useChatStore((state) => state.conversations);
+  const initializeChat = useChatStore((state) => state.initializeChat);
+  const disconnectChat = useChatStore((state) => state.disconnectChat);
 
   useEffect(() => {
     if (!isHydrated) {
       hydrateSession();
     }
   }, [hydrateSession, isHydrated]);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+
+    if (!session) {
+      disconnectChat();
+      return;
+    }
+
+    initializeChat({
+      userId: session.uid,
+      userName: session.username,
+      role: session.role,
+    });
+  }, [disconnectChat, initializeChat, isHydrated, session]);
 
   async function handleLogout() {
     await logout();

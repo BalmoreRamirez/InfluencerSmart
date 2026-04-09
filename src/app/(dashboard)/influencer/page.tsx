@@ -2,10 +2,14 @@
 
 import Link from "next/link";
 import { MetricCard } from "@/shared/components/ui/metric-card";
-import { influencerMetrics, conversations } from "@/shared/lib/mock-data";
+import { influencerMetrics } from "@/shared/lib/mock-data";
 import { ProtectedRoute } from "@/shared/components/auth/protected-route";
+import { useChatStore } from "@/shared/stores/chat-store";
 
 function InfluencerDashboardContent() {
+  const liveConversations = useChatStore((state) => state.conversations);
+  const totalUnread = liveConversations.reduce((total, item) => total + item.unread, 0);
+
   return (
     <main className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-6">
       <section className="rounded-3xl border border-black/10 bg-white p-6 sm:p-8">
@@ -29,7 +33,7 @@ function InfluencerDashboardContent() {
               href="/chat"
               className="rounded-full bg-[#0d0c15] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1f1c30]"
             >
-              Ver mensajes
+              Ver mensajes {totalUnread > 0 ? `(${totalUnread})` : ""}
             </Link>
           </div>
         </div>
@@ -53,30 +57,36 @@ function InfluencerDashboardContent() {
         </p>
 
         <div className="mt-4 grid gap-3 md:grid-cols-2">
-          {conversations.map((conv) => (
-            <article
-              key={conv.name}
-              className="rounded-2xl border border-black/10 p-4 hover:bg-[#f4f4f4] transition"
-            >
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <p className="text-sm font-bold text-[#0d0c15]">{conv.name}</p>
-                  <p className="mt-1 text-sm text-[#0d0c15]/75">{conv.last}</p>
-                </div>
-                {conv.unread > 0 ? (
-                  <span className="rounded-full bg-[#fed97b] px-2.5 py-1 text-xs font-bold text-[#0d0c15]">
-                    {conv.unread}
-                  </span>
-                ) : null}
-              </div>
-              <Link
-                href="/chat"
-                className="mt-3 inline-block text-xs font-semibold text-[#0d0c15] underline"
-              >
-                Abrir conversación →
-              </Link>
+          {liveConversations.length === 0 ? (
+            <article className="rounded-2xl border border-dashed border-black/15 p-4 text-sm text-[#0d0c15]/70">
+              Aún no tienes conversaciones registradas en tu base de datos.
             </article>
-          ))}
+          ) : (
+            liveConversations.map((conv) => (
+              <article
+                key={conv.id}
+                className="rounded-2xl border border-black/10 p-4 hover:bg-[#f4f4f4] transition"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-bold text-[#0d0c15]">{conv.name}</p>
+                    <p className="mt-1 text-sm text-[#0d0c15]/75">{conv.last}</p>
+                  </div>
+                  {conv.unread > 0 ? (
+                    <span className="rounded-full bg-[#fed97b] px-2.5 py-1 text-xs font-bold text-[#0d0c15]">
+                      {conv.unread}
+                    </span>
+                  ) : null}
+                </div>
+                <Link
+                  href="/chat"
+                  className="mt-3 inline-block text-xs font-semibold text-[#0d0c15] underline"
+                >
+                  Abrir conversación →
+                </Link>
+              </article>
+            ))
+          )}
         </div>
       </section>
 
