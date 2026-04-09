@@ -1,14 +1,53 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import { MetricCard } from "@/shared/components/ui/metric-card";
-import { influencerMetrics } from "@/shared/lib/mock-data";
 import { ProtectedRoute } from "@/shared/components/auth/protected-route";
+import { getInfluencerOnboarding } from "@/shared/services/firebase-onboarding-service";
+import { useAuthStore } from "@/shared/stores/auth-store";
 import { useChatStore } from "@/shared/stores/chat-store";
 
+function formatCompactNumber(value: number) {
+  return new Intl.NumberFormat("es", {
+    notation: "compact",
+    maximumFractionDigits: 1,
+  })
+    .format(value)
+    .toLowerCase();
+}
+
 function InfluencerDashboardContent() {
+  const session = useAuthStore((state) => state.session);
   const liveConversations = useChatStore((state) => state.conversations);
   const totalUnread = liveConversations.reduce((total, item) => total + item.unread, 0);
+  const [followers, setFollowers] = useState("0");
+  const [engagement, setEngagement] = useState("0%");
+  const [price, setPrice] = useState("$0 USD");
+
+  useEffect(() => {
+    async function loadProfile() {
+      if (!session?.uid) return;
+      const profile = await getInfluencerOnboarding(session.uid);
+      if (!profile) return;
+
+      setFollowers(formatCompactNumber(profile.metrics.instagram_followers || 0));
+      setEngagement(`${profile.metrics.engagement || 0}%`);
+      setPrice(`$${profile.prices.ig_reel || 0} USD`);
+    }
+
+    loadProfile().catch(() => undefined);
+  }, [session?.uid]);
+
+  const metrics = useMemo(
+    () => [
+      { label: "Seguidores IG", value: followers, hint: "Desde base de datos" },
+      { label: "Tasa de respuesta", value: liveConversations.length > 0 ? "Activa" : "Sin chats", hint: "Estado en tiempo real" },
+      { label: "Engagement", value: engagement, hint: "Métricas de onboarding" },
+      { label: "Precio reel", value: price, hint: "Tarifa configurada" },
+    ],
+    [engagement, followers, liveConversations.length, price]
+  );
 
   return (
     <main className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-6">
@@ -39,7 +78,7 @@ function InfluencerDashboardContent() {
         </div>
 
         <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {influencerMetrics.map((metric) => (
+          {metrics.map((metric) => (
             <MetricCard
               key={metric.label}
               label={metric.label}

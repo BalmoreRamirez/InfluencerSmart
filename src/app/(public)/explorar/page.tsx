@@ -6,6 +6,15 @@ import { useRouter } from "next/navigation";
 import { listPublicInfluencers, type PublicInfluencerCard } from "@/shared/services/firebase-influencers-service";
 import { useAuthStore } from "@/shared/stores/auth-store";
 
+function toSlug(value: string) {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
 export default function ExplorePage() {
   const router = useRouter();
   const session = useAuthStore((state) => state.session);
@@ -183,7 +192,7 @@ export default function ExplorePage() {
             </div>
             <div className="mt-4 flex gap-2">
               <Link
-                href="/influencer/valeria"
+                href={`/influencer/${encodeURIComponent(toSlug(profile.name))}`}
                 className="flex-1 rounded-full border border-black/15 px-4 py-2 text-center text-sm font-semibold text-[#0d0c15] hover:bg-[#f4f4f4]"
               >
                 Ver perfil

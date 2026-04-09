@@ -1,6 +1,13 @@
-import type { Review } from "@/shared/lib/mock-data";
+export type ReviewCardItem = {
+  id: string;
+  companyName: string;
+  rating: number;
+  comment: string;
+  date: string;
+  campaign: string;
+};
 
-export function ReviewCard({ review }: { review: Review }) {
+export function ReviewCard({ review }: { review: ReviewCardItem }) {
   return (
     <div className="rounded-2xl border border-black/10 bg-white p-4">
       <div className="mb-3 flex items-start justify-between">

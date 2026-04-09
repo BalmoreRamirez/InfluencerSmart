@@ -2,12 +2,106 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { influencerProfile, allReviews } from "@/shared/lib/mock-data";
-import { ReviewCard } from "@/shared/components/ui/review-card";
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import { ReviewCard, type ReviewCardItem } from "@/shared/components/ui/review-card";
+import { getPublicInfluencerProfileBySlug } from "@/shared/services/firebase-public-profile-service";
+
+type PublicProfileState = {
+  fullName: string;
+  avatarUrl: string;
+  handle: string;
+  location: string;
+  categories: string[];
+  bio: string;
+  followers: string;
+  avgReach: string;
+  engagementRate: string;
+  estimatedPrice: string;
+  completedServices: number;
+  languages: string[];
+  portfolio: string[];
+  averageRating?: number;
+  totalReviews: number;
+  instagramConnected: boolean;
+  instagramMetrics?: {
+    monthlyReach: string;
+    storyViews: string;
+    demographics: {
+      age: string;
+      gender: string;
+      topCountries: string[];
+    };
+  };
+  reviews: ReviewCardItem[];
+  id: string;
+};
 
 export default function InfluencerPublicProfilePage() {
-  const profile = influencerProfile;
-  const reviews = allReviews.filter((r) => r.influencerHandle === profile.handle);
+  const params = useParams<{ slug: string }>();
+  const slug = typeof params?.slug === "string" ? params.slug : "";
+  const [profile, setProfile] = useState<PublicProfileState | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      if (!slug) {
+        setError("Perfil inválido.");
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+
+      const data = await getPublicInfluencerProfileBySlug(slug);
+      if (cancelled) return;
+
+      if (!data) {
+        setError("No se encontró el perfil en la base de datos.");
+        setProfile(null);
+        setLoading(false);
+        return;
+      }
+
+      setProfile(data);
+      setLoading(false);
+    }
+
+    load().catch(() => {
+      if (cancelled) return;
+      setError("No se pudo cargar el perfil desde la base de datos.");
+      setProfile(null);
+      setLoading(false);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-10">
+        <div className="rounded-3xl border border-black/10 bg-white p-6 text-sm text-[#0d0c15]/70">
+          Cargando perfil desde la base de datos...
+        </div>
+      </main>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-10">
+        <div className="rounded-3xl border border-amber-200 bg-amber-50 p-6 text-sm text-amber-800">
+          {error ?? "Perfil no disponible."}
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-10">
@@ -15,7 +109,7 @@ export default function InfluencerPublicProfilePage() {
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex items-center gap-4">
             <Image
-              src={profile.avatarUrl ?? "/avatars/influencer-example.svg"}
+              src={profile.avatarUrl || "/avatars/influencer-example.svg"}
               alt={`Foto de perfil de ${profile.fullName}`}
               width={88}
               height={88}
@@ -28,7 +122,7 @@ export default function InfluencerPublicProfilePage() {
             </div>
           </div>
           <span className="rounded-full bg-[#c1b8ff] px-3 py-1 text-xs font-semibold text-[#0d0c15]">
-            {profile.estimatedPrice} por colaboracion
+            {profile.estimatedPrice} por colaboración
           </span>
         </div>
 
@@ -93,20 +187,24 @@ export default function InfluencerPublicProfilePage() {
 
           <div className="rounded-2xl border border-black/10 bg-[#f4f4f4] p-5">
             <h2 className="text-lg font-bold text-[#0d0c15]">Portfolio</h2>
-            <ul className="mt-3 space-y-2">
-              {profile.portfolio.map((item, i) => (
-                <li key={i} className="text-sm text-[#0d0c15]/80">
-                  • {item}
-                </li>
-              ))}
-            </ul>
+            {profile.portfolio.length === 0 ? (
+              <p className="mt-3 text-sm text-[#0d0c15]/70">Sin portafolio registrado en base de datos.</p>
+            ) : (
+              <ul className="mt-3 space-y-2">
+                {profile.portfolio.map((item, i) => (
+                  <li key={i} className="text-sm text-[#0d0c15]/80">
+                    • {item}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
 
         <div className="mt-6">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-bold text-[#0d0c15]">
-              Reviews ({profile.totalReviews || reviews.length})
+              Reviews ({profile.totalReviews})
             </h2>
             {profile.averageRating ? (
               <div className="flex items-center gap-2">
@@ -131,7 +229,7 @@ export default function InfluencerPublicProfilePage() {
             ) : null}
           </div>
           <div className="mt-4 grid gap-3 md:grid-cols-2">
-            {reviews.map((review) => (
+            {profile.reviews.map((review) => (
               <ReviewCard key={review.id} review={review} />
             ))}
           </div>
@@ -139,7 +237,7 @@ export default function InfluencerPublicProfilePage() {
 
         <div className="mt-8 flex gap-3">
           <Link
-            href="/chat"
+            href={`/chat?contactId=${encodeURIComponent(profile.id)}&contactName=${encodeURIComponent(profile.fullName)}`}
             className="rounded-xl bg-[#0d0c15] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#1f1c30]"
           >
             Enviar mensaje
@@ -164,3 +262,4 @@ function MetricBox({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+

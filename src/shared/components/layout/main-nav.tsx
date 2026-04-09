@@ -4,7 +4,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { companyProfile, influencerProfile } from "@/shared/lib/mock-data";
 import { useAuthStore } from "@/shared/stores/auth-store";
 import { useChatStore } from "@/shared/stores/chat-store";
 
@@ -63,10 +62,11 @@ export function MainNav() {
     router.refresh();
   }
 
-  const sessionAvatarUrl =
-    session?.role === "influencer"
-      ? (influencerProfile.avatarUrl ?? "/avatars/influencer-example.svg")
-      : (companyProfile.avatarUrl ?? "/avatars/company-example.svg");
+  const sessionAvatarUrl = session?.profileImage?.trim()
+    ? session.profileImage
+    : session?.role === "influencer"
+      ? "/avatars/influencer-example.svg"
+      : "/avatars/company-example.svg";
 
   const sessionRoleLabel = session?.role === "influencer" ? "Influencer" : "Empresa";
   const unreadMessages = conversations.reduce((total, item) => total + item.unread, 0);

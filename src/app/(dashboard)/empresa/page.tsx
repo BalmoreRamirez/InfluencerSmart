@@ -1,15 +1,48 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import { ProtectedRoute } from "@/shared/components/auth/protected-route";
 import { MetricCard } from "@/shared/components/ui/metric-card";
-import { campaignDraft, companyMetrics, suggestedInfluencers } from "@/shared/lib/mock-data";
-
-function toContactId(name: string) {
-  return `influencer-${name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
-}
+import { listPublicInfluencers, type PublicInfluencerCard } from "@/shared/services/firebase-influencers-service";
+import { getCompanyOnboarding } from "@/shared/services/firebase-onboarding-service";
+import { useAuthStore } from "@/shared/stores/auth-store";
 
 function CompanyDashboardContent() {
+  const session = useAuthStore((state) => state.session);
+  const [influencers, setInfluencers] = useState<PublicInfluencerCard[]>([]);
+  const [credits, setCredits] = useState(0);
+  const [campaignText, setCampaignText] = useState("");
+
+  useEffect(() => {
+    listPublicInfluencers()
+      .then((rows) => setInfluencers(rows.slice(0, 4)))
+      .catch(() => setInfluencers([]));
+  }, []);
+
+  useEffect(() => {
+    async function loadCompany() {
+      if (!session?.uid) return;
+      const company = await getCompanyOnboarding(session.uid);
+      if (!company) return;
+
+      setCredits(company.credits || 0);
+      setCampaignText(company.description || "");
+    }
+
+    loadCompany().catch(() => undefined);
+  }, [session?.uid]);
+
+  const companyMetrics = useMemo(
+    () => [
+      { label: "Créditos disponibles", value: String(credits), hint: "1 crédito por nuevo chat" },
+      { label: "Influencers sugeridos", value: String(influencers.length), hint: "Desde base de datos" },
+      { label: "Respuestas 24h", value: "En progreso", hint: "Métricas en tiempo real" },
+      { label: "Perfil empresa", value: campaignText ? "Completo" : "Pendiente", hint: "Onboarding" },
+    ],
+    [campaignText, credits, influencers.length]
+  );
+
   return (
     <main className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-6">
       <section className="rounded-3xl border border-black/10 bg-white p-6 sm:p-8">
@@ -54,21 +87,21 @@ function CompanyDashboardContent() {
         <article className="rounded-3xl border border-black/10 bg-white p-6">
           <h2 className="text-xl font-bold text-[#0d0c15]">Top sugeridos</h2>
           <ul className="mt-4 space-y-3">
-            {suggestedInfluencers.map((item) => (
+            {influencers.map((item) => (
               <li
-                key={item.name}
+                key={item.id}
                 className="flex items-center justify-between rounded-2xl bg-[#f4f4f4] px-3 py-2.5"
               >
                 <div>
                   <p className="text-sm font-semibold text-[#0d0c15]">{item.name}</p>
                   <p className="text-xs text-[#0d0c15]/70">
-                    Score de afinidad: {item.score}% | Nicho: {item.niche}
+                    Engagement: {item.engagement} | Nicho: {item.category}
                   </p>
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-bold text-[#0d0c15]">{item.price}</p>
                   <Link
-                    href={`/chat?contactId=${encodeURIComponent(toContactId(item.name))}&contactName=${encodeURIComponent(item.name)}`}
+                    href={`/chat?contactId=${encodeURIComponent(item.id)}&contactName=${encodeURIComponent(item.name)}`}
                     className="text-xs font-semibold text-[#0d0c15] underline"
                   >
                     Contactar
@@ -83,12 +116,12 @@ function CompanyDashboardContent() {
           <h2 className="text-xl font-bold text-[#0d0c15]">Nuevo brief de campana</h2>
           <form className="mt-4 space-y-3">
             <input
-              defaultValue={campaignDraft.objective}
+              defaultValue="Objetivo de campaña"
               className="w-full rounded-xl border border-black/15 px-3 py-2.5 text-sm outline-none ring-[#c1b8ff] focus:ring-2"
             />
             <textarea
               rows={4}
-              defaultValue={campaignDraft.details}
+              defaultValue={campaignText}
               className="w-full rounded-xl border border-black/15 px-3 py-2.5 text-sm outline-none ring-[#c1b8ff] focus:ring-2"
             />
             <button
