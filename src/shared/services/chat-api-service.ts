@@ -7,6 +7,13 @@ type SendViaApiPayload = {
   text: string;
 };
 
+type SendViaApiResponse = {
+  ok: boolean;
+  chatId: string;
+  contactId: string;
+  contactName: string;
+};
+
 async function getAuthToken() {
   const currentUser = auth?.currentUser;
   if (!currentUser) {
@@ -32,4 +39,6 @@ export async function sendMessageViaApi(payload: SendViaApiPayload) {
     const data = (await response.json().catch(() => null)) as { error?: string } | null;
     throw new Error(data?.error ?? "No se pudo enviar el mensaje.");
   }
+
+  return (await response.json()) as SendViaApiResponse;
 }

@@ -52,13 +52,17 @@ export type CompanyDoc = {
 export type ChatDoc = {
   participants: [string, string];
   participant_names?: Record<string, string>;
+  participant_images?: Record<string, string>;
   is_unlocked: boolean;
   last_message: string;
+  last_sender_id?: string;
   updated_at: Timestamp | null;
 };
 
 export type MessageDoc = {
   sender_id: string;
+  sender_name?: string;
+  sender_profile_image?: string;
   text: string;
   timestamp: Timestamp | null;
 };
@@ -143,4 +147,3 @@ export function chatMessagesCollectionRef(chatId: string) {
 export function reviewsCollectionRef() {
   return collection(requireDb(), "reviews") as CollectionReference<ReviewDoc>;
 }
-

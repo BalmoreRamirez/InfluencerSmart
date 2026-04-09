@@ -25,6 +25,8 @@ type ConversationRecord = {
 type ChatMessageRecord = {
   id: string;
   by: ChatRole;
+  senderName: string;
+  senderProfileImage: string;
   text: string;
   at: string;
 };
@@ -69,7 +71,7 @@ export function subscribeUserConversations(
           contactId,
           contactName,
           last: data.last_message ?? "",
-          unread: 0,
+          unread: data.last_sender_id && data.last_sender_id !== userId ? 1 : 0,
         });
       });
 
@@ -105,6 +107,8 @@ export function subscribeChatMessages(
         return {
           id: item.id,
           by: role,
+          senderName: data.sender_name ?? (ownMessage ? "Tú" : "Contacto"),
+          senderProfileImage: data.sender_profile_image ?? "",
           text: data.text,
           at: data.timestamp?.toDate ? formatHourLabel(data.timestamp.toDate()) : "--:--",
         } satisfies ChatMessageRecord;
@@ -181,4 +185,3 @@ export async function ensureChatRecord(params: {
     updated_at: serverTimestamp(),
   });
 }
-

@@ -17,6 +17,8 @@ type ChatRole = "influencer" | "empresa";
 
 type ChatMessage = {
   by: ChatRole;
+  senderName: string;
+  senderProfileImage: string;
   text: string;
   at: string;
 };
@@ -124,7 +126,13 @@ export const useChatStore = create<ChatState>((set, get) => ({
         state.currentUserRole,
         (rows) => {
           set({
-            chatThread: rows.map((item) => ({ by: item.by, text: item.text, at: item.at })),
+            chatThread: rows.map((item) => ({
+              by: item.by,
+              senderName: item.senderName,
+              senderProfileImage: item.senderProfileImage,
+              text: item.text,
+              at: item.at,
+            })),
           });
         }
       );
@@ -250,7 +258,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     set({ sending: true });
 
     try {
-      await sendMessageViaApi({
+      const apiResult = await sendMessageViaApi({
         chatId: activeConversationId,
         contactId: activeConversation.contactId,
         contactName: activeConversation.name,
@@ -267,15 +275,19 @@ export const useChatStore = create<ChatState>((set, get) => ({
       set((state) => ({
         message: "",
         sending: false,
+        activeConversationId: apiResult.chatId,
+        activeContactName: apiResult.contactName,
         conversations: state.conversations.map((item) =>
-          item.id === activeConversationId
-            ? { ...item, last: message.trim() }
+          item.id === activeConversationId || item.id === apiResult.chatId
+            ? { ...item, id: apiResult.chatId, contactId: apiResult.contactId, name: apiResult.contactName, last: message.trim() }
             : item
         ),
       }));
     } catch (error) {
       const failedMessage: ChatMessage = {
         by: currentUserRole,
+        senderName: "Sistema",
+        senderProfileImage: "",
         text: error instanceof Error ? `Error: ${error.message}` : "No se pudo enviar el mensaje. Reintenta.",
         at: "--:--",
       };

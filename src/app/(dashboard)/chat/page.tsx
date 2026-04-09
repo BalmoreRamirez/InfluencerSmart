@@ -3,6 +3,7 @@
 import { FormEvent } from "react";
 import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
+import Image from "next/image";
 import { AuthenticatedRoute } from "@/shared/components/auth/authenticated-route";
 import { useChatStore } from "@/shared/stores/chat-store";
 import { useAuthStore } from "@/shared/stores/auth-store";
@@ -117,8 +118,17 @@ function ChatPageContent() {
               return (
                 <div
                   key={msg.text + index}
-                  className={`flex ${isCompany ? "justify-start" : "justify-end"}`}
+                  className={`flex items-end gap-2 ${isCompany ? "justify-start" : "justify-end"}`}
                 >
+                  {isCompany ? (
+                    <Image
+                      src={msg.senderProfileImage || "/avatars/company-example.svg"}
+                      alt={`Avatar de ${msg.senderName}`}
+                      width={30}
+                      height={30}
+                      className="h-7 w-7 rounded-full border border-black/10 object-cover"
+                    />
+                  ) : null}
                   <p
                     className={`max-w-[90%] rounded-2xl px-3 py-2 text-sm sm:max-w-[72%] ${
                       isCompany
@@ -126,9 +136,19 @@ function ChatPageContent() {
                         : "bg-[#c1b8ff] text-[#0d0c15]"
                     }`}
                   >
+                    <span className="block text-[11px] font-semibold opacity-80">{msg.senderName}</span>
                     {msg.text}
                     <span className="mt-1 block text-[10px] opacity-70">{msg.at}</span>
                   </p>
+                  {!isCompany ? (
+                    <Image
+                      src={msg.senderProfileImage || "/avatars/influencer-example.svg"}
+                      alt={`Avatar de ${msg.senderName}`}
+                      width={30}
+                      height={30}
+                      className="h-7 w-7 rounded-full border border-black/10 object-cover"
+                    />
+                  ) : null}
                 </div>
               );
             })}
