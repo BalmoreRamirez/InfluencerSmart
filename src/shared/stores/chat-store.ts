@@ -8,11 +8,10 @@ import {
   sendChatMessage,
 } from "@/shared/services/chat-socket";
 import {
-  ensureChatRecord,
-  persistChatMessage,
   subscribeChatMessages,
   subscribeUserConversations,
 } from "@/shared/services/firebase-chat-service";
+import { sendMessageViaApi } from "@/shared/services/chat-api-service";
 
 type ChatRole = "influencer" | "empresa";
 
@@ -77,14 +76,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
     if (!normalizedContactId || !normalizedContactName) return;
 
     const chatId = createRoomId(currentUserId, normalizedContactId);
-
-    await ensureChatRecord({
-      chatId,
-      userId: currentUserId,
-      userName: currentUserName,
-      contactId: normalizedContactId,
-      contactName: normalizedContactName,
-    });
 
     set((state) => {
       const exists = state.conversations.some((item) => item.id === chatId);
@@ -259,18 +250,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
     set({ sending: true });
 
     try {
-      await ensureChatRecord({
+      await sendMessageViaApi({
         chatId: activeConversationId,
-        userId: currentUserId,
-        userName: currentUserName,
-        contactId: activeConversation.contactId,
-        contactName: activeConversation.name,
-      });
-
-      await persistChatMessage({
-        chatId: activeConversationId,
-        userId: currentUserId,
-        userName: currentUserName,
         contactId: activeConversation.contactId,
         contactName: activeConversation.name,
         text: message.trim(),
@@ -292,10 +273,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
             : item
         ),
       }));
-    } catch {
+    } catch (error) {
       const failedMessage: ChatMessage = {
         by: currentUserRole,
-        text: "No se pudo enviar el mensaje. Reintenta.",
+        text: error instanceof Error ? `Error: ${error.message}` : "No se pudo enviar el mensaje. Reintenta.",
         at: "--:--",
       };
 

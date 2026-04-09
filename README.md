@@ -122,6 +122,18 @@ NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
 NEXT_PUBLIC_FIREBASE_APP_ID=...
 ```
 
+### Backend proxy para chat (Netlify/Next API)
+
+Para evitar bloqueos de extensiones al hablar directo con Firestore desde el navegador, el envío de mensajes usa `/api/chat/send` con Firebase Admin SDK.
+
+Variables adicionales requeridas en entorno (Netlify):
+
+```dotenv
+FIREBASE_PROJECT_ID=...
+FIREBASE_CLIENT_EMAIL=...
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+```
+
 Uso basico:
 
 ```ts
