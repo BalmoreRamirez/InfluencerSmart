@@ -11,7 +11,11 @@ import {
   subscribeChatMessages,
   subscribeUserConversations,
 } from "@/shared/services/firebase-chat-service";
-import { sendMessageViaApi } from "@/shared/services/chat-api-service";
+import {
+  fetchConversationsViaApi,
+  fetchMessagesViaApi,
+  sendMessageViaApi,
+} from "@/shared/services/chat-api-service";
 
 type ChatRole = "influencer" | "empresa";
 
@@ -37,6 +41,8 @@ const EMPTY_CONVERSATIONS: ConversationItem[] = [];
 let stopConversationsListener: (() => void) | null = null;
 let stopMessagesListener: (() => void) | null = null;
 let stopSocketStatusListener: (() => void) | null = null;
+let stopConversationsPoll: (() => void) | null = null;
+let stopMessagesPoll: (() => void) | null = null;
 
 type ChatState = {
   chatThread: ChatMessage[];
@@ -115,6 +121,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       }
 
       stopMessagesListener?.();
+      stopMessagesPoll?.();
 
       const roomId = createRoomId(state.currentUserId, selected.contactId);
       leaveChatRoom(roomId);
@@ -134,6 +141,26 @@ export const useChatStore = create<ChatState>((set, get) => ({
               at: item.at,
             })),
           });
+        },
+        () => {
+          const loadMessages = async () => {
+            const rows = await fetchMessagesViaApi(conversationId, state.currentUserRole!);
+            set({
+              chatThread: rows.map((item) => ({
+                by: item.by,
+                senderName: item.senderName,
+                senderProfileImage: item.senderProfileImage,
+                text: item.text,
+                at: item.at,
+              })),
+            });
+          };
+
+          loadMessages().catch(() => undefined);
+          const timer = setInterval(() => {
+            loadMessages().catch(() => undefined);
+          }, 3000);
+          stopMessagesPoll = () => clearInterval(timer);
         }
       );
 
@@ -151,6 +178,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
     stopConversationsListener?.();
     stopMessagesListener?.();
     stopSocketStatusListener?.();
+    stopConversationsPoll?.();
+    stopMessagesPoll?.();
 
     set({
       currentUserId: userId,
@@ -204,7 +233,90 @@ export const useChatStore = create<ChatState>((set, get) => ({
       if (nextActiveId) {
         get().setActiveConversation(nextActiveId);
       }
+    },
+    () => {
+      const loadConversations = async () => {
+        const rows = await fetchConversationsViaApi();
+        const mapped: ConversationItem[] = rows.map((item) => ({
+          id: item.chatId,
+          contactId: item.contactId,
+          name: item.contactName,
+          last: item.last,
+          unread: item.unread,
+        }));
+
+        set((state) => {
+          if (mapped.length === 0) {
+            return {
+              conversations: EMPTY_CONVERSATIONS,
+              activeConversationId: null,
+              activeContactName: null,
+              chatThread: EMPTY_THREAD,
+            };
+          }
+
+          const stillExists = state.activeConversationId
+            ? mapped.some((item) => item.id === state.activeConversationId)
+            : false;
+
+          const nextActiveId = stillExists ? state.activeConversationId : mapped[0].id;
+          const nextActive = mapped.find((item) => item.id === nextActiveId) ?? mapped[0];
+
+          return {
+            conversations: mapped,
+            activeConversationId: nextActive.id,
+            activeContactName: nextActive.name,
+          };
+        });
+
+        const nextActiveId = get().activeConversationId;
+        if (nextActiveId) {
+          get().setActiveConversation(nextActiveId);
+        }
+      };
+
+      loadConversations().catch(() => undefined);
+      const timer = setInterval(() => {
+        loadConversations().catch(() => undefined);
+      }, 3000);
+      stopConversationsPoll = () => clearInterval(timer);
     });
+
+    fetchConversationsViaApi()
+      .then((rows) => {
+        const mapped: ConversationItem[] = rows.map((item) => ({
+          id: item.chatId,
+          contactId: item.contactId,
+          name: item.contactName,
+          last: item.last,
+          unread: item.unread,
+        }));
+
+        set((state) => {
+          if (mapped.length === 0) {
+            return state;
+          }
+
+          const stillExists = state.activeConversationId
+            ? mapped.some((item) => item.id === state.activeConversationId)
+            : false;
+
+          const nextActiveId = stillExists ? state.activeConversationId : mapped[0].id;
+          const nextActive = mapped.find((item) => item.id === nextActiveId) ?? mapped[0];
+
+          return {
+            conversations: mapped,
+            activeConversationId: nextActive.id,
+            activeContactName: nextActive.name,
+          };
+        });
+
+        const nextActiveId = get().activeConversationId;
+        if (nextActiveId) {
+          get().setActiveConversation(nextActiveId);
+        }
+      })
+      .catch(() => undefined);
   },
   disconnectChat: () => {
     const currentUserId = get().currentUserId;
@@ -218,9 +330,13 @@ export const useChatStore = create<ChatState>((set, get) => ({
     stopConversationsListener?.();
     stopMessagesListener?.();
     stopSocketStatusListener?.();
+    stopConversationsPoll?.();
+    stopMessagesPoll?.();
     stopConversationsListener = null;
     stopMessagesListener = null;
     stopSocketStatusListener = null;
+    stopConversationsPoll = null;
+    stopMessagesPoll = null;
     disconnectChatSocket();
 
     set({
