@@ -43,6 +43,7 @@ let stopMessagesListener: (() => void) | null = null;
 let stopSocketStatusListener: (() => void) | null = null;
 let stopConversationsPoll: (() => void) | null = null;
 let stopMessagesPoll: (() => void) | null = null;
+let activeMessagesChannelId: string | null = null;
 
 type ChatState = {
   chatThread: ChatMessage[];
@@ -120,8 +121,19 @@ export const useChatStore = create<ChatState>((set, get) => ({
         };
       }
 
+      if (activeMessagesChannelId === conversationId) {
+        return {
+          activeConversationId: conversationId,
+          activeContactName: selected.name,
+          conversations: updated,
+        };
+      }
+
       stopMessagesListener?.();
       stopMessagesPoll?.();
+      stopMessagesListener = null;
+      stopMessagesPoll = null;
+      activeMessagesChannelId = conversationId;
 
       const roomId = createRoomId(state.currentUserId, selected.contactId);
       leaveChatRoom(roomId);
@@ -230,7 +242,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       });
 
       const nextActiveId = get().activeConversationId;
-      if (nextActiveId) {
+      if (nextActiveId && nextActiveId !== activeMessagesChannelId) {
         get().setActiveConversation(nextActiveId);
       }
     },
@@ -270,7 +282,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         });
 
         const nextActiveId = get().activeConversationId;
-        if (nextActiveId) {
+        if (nextActiveId && nextActiveId !== activeMessagesChannelId) {
           get().setActiveConversation(nextActiveId);
         }
       };
@@ -312,7 +324,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         });
 
         const nextActiveId = get().activeConversationId;
-        if (nextActiveId) {
+        if (nextActiveId && nextActiveId !== activeMessagesChannelId) {
           get().setActiveConversation(nextActiveId);
         }
       })
@@ -337,6 +349,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     stopSocketStatusListener = null;
     stopConversationsPoll = null;
     stopMessagesPoll = null;
+    activeMessagesChannelId = null;
     disconnectChatSocket();
 
     set({
