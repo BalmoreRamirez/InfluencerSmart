@@ -2,9 +2,15 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { listPublicInfluencers, type PublicInfluencerCard } from "@/shared/services/firebase-influencers-service";
+import { useAuthStore } from "@/shared/stores/auth-store";
 
 export default function ExplorePage() {
+  const router = useRouter();
+  const session = useAuthStore((state) => state.session);
+  const isHydrated = useAuthStore((state) => state.isHydrated);
+  const hydrateSession = useAuthStore((state) => state.hydrateSession);
   const [influencers, setInfluencers] = useState<PublicInfluencerCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -16,6 +22,23 @@ export default function ExplorePage() {
   });
 
   useEffect(() => {
+    if (!isHydrated) {
+      hydrateSession();
+    }
+  }, [hydrateSession, isHydrated]);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+    if (session?.role === "influencer") {
+      router.replace("/influencer");
+    }
+  }, [isHydrated, router, session?.role]);
+
+  useEffect(() => {
+    if (!isHydrated || session?.role === "influencer") {
+      return;
+    }
+
     let cancelled = false;
 
     async function loadInfluencers() {
@@ -39,7 +62,7 @@ export default function ExplorePage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [isHydrated, session?.role]);
 
   const countries = ["Todos", ...Array.from(new Set(influencers.map((i) => i.country)))];
   const categories = ["Todas", ...Array.from(new Set(influencers.map((i) => i.category)))];

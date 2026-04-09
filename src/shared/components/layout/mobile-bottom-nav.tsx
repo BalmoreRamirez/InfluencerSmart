@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useChatStore } from "@/shared/stores/chat-store";
+import { useAuthStore } from "@/shared/stores/auth-store";
 
-const mobileItems = [
+const defaultMobileItems = [
   { href: "/", label: "Inicio" },
-  { href: "/explorar", label: "Explorar" },
   { href: "/chat", label: "Chat" },
   { href: "/influencer/perfil", label: "Perfil" },
 ];
+const companyExtraMobileItems = [{ href: "/explorar", label: "Explorar" }];
 
 function MessageIcon() {
   return (
@@ -27,9 +28,14 @@ function MessageIcon() {
 
 export function MobileBottomNav() {
   const pathname = usePathname();
+  const session = useAuthStore((state) => state.session);
   const conversations = useChatStore((state) => state.conversations);
   const unreadMessages = conversations.reduce((total, item) => total + item.unread, 0);
   const unreadLabel = unreadMessages > 99 ? "99+" : String(unreadMessages);
+  const mobileItems =
+    session?.role === "empresa"
+      ? [...defaultMobileItems.slice(0, 1), ...companyExtraMobileItems, ...defaultMobileItems.slice(1)]
+      : defaultMobileItems;
 
   function isActive(href: string) {
     if (href === "/") {

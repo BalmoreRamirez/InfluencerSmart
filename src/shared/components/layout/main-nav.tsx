@@ -8,10 +8,8 @@ import { companyProfile, influencerProfile } from "@/shared/lib/mock-data";
 import { useAuthStore } from "@/shared/stores/auth-store";
 import { useChatStore } from "@/shared/stores/chat-store";
 
-const navItems = [
-  { href: "/", label: "Inicio" },
-  { href: "/explorar", label: "Explorar" },
-];
+const publicNavItems = [{ href: "/", label: "Inicio" }];
+const companyNavItems = [{ href: "/explorar", label: "Explorar" }];
 
 function MessageIcon() {
   return (
@@ -56,6 +54,7 @@ export function MainNav() {
   const sessionRoleLabel = session?.role === "influencer" ? "Influencer" : "Empresa";
   const unreadMessages = conversations.reduce((total, item) => total + item.unread, 0);
   const unreadLabel = unreadMessages > 99 ? "99+" : String(unreadMessages);
+  const navItems = session?.role === "empresa" ? [...publicNavItems, ...companyNavItems] : publicNavItems;
 
   return (
     <header className="sticky top-0 z-40 border-b border-black/10 bg-white backdrop-blur-lg">
