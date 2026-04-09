@@ -21,9 +21,9 @@ function toSlug(value: string) {
     .replace(/^-|-$/g, "");
 }
 
-async function resolveInfluencerContact(adminDb: FirebaseFirestore.Firestore, contactId: string, contactName: string) {
+async function resolveContact(adminDb: FirebaseFirestore.Firestore, contactId: string, contactName: string) {
   const byId = await adminDb.collection("users").doc(contactId).get();
-  if (byId.exists && byId.data()?.role === "influencer") {
+  if (byId.exists) {
     return {
       uid: contactId,
       displayName: (byId.data()?.username as string | undefined)?.trim() || contactName,
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Payload invalido" }, { status: 400 });
     }
 
-    const target = await resolveInfluencerContact(adminDb, contactId, contactName);
+  const target = await resolveContact(adminDb, contactId, contactName);
     if (target.uid === uid) {
       return NextResponse.json({ error: "No puedes enviarte mensajes a ti mismo." }, { status: 400 });
     }
