@@ -19,13 +19,22 @@ type JoinRoomPayload = {
 let socket: Socket | null = null;
 
 function getSocketServerUrl() {
-  return process.env.NEXT_PUBLIC_CHAT_SOCKET_URL ?? "http://localhost:4001";
+  const configured = process.env.NEXT_PUBLIC_CHAT_SOCKET_URL?.trim();
+  if (configured) return configured;
+
+  if (typeof window !== "undefined" && window.location.hostname === "localhost") {
+    return "http://localhost:4001";
+  }
+
+  return null;
 }
 
 function ensureSocket() {
+  const serverUrl = getSocketServerUrl();
+  if (!serverUrl) return null;
   if (socket) return socket;
 
-  socket = io(getSocketServerUrl(), {
+  socket = io(serverUrl, {
     transports: ["websocket"],
     autoConnect: true,
   });
@@ -39,6 +48,7 @@ export function createRoomId(a: string, b: string) {
 
 export function joinChatRoom(payload: JoinRoomPayload) {
   const client = ensureSocket();
+  if (!client) return null;
   client.emit("join_room", payload);
   return client;
 }
@@ -50,6 +60,7 @@ export function leaveChatRoom(roomId: string) {
 
 export function onChatHistory(cb: (messages: ServerChatMessage[]) => void) {
   const client = ensureSocket();
+  if (!client) return () => undefined;
   client.on("chat_history", cb);
 
   return () => {
@@ -59,6 +70,7 @@ export function onChatHistory(cb: (messages: ServerChatMessage[]) => void) {
 
 export function onChatMessage(cb: (message: ServerChatMessage) => void) {
   const client = ensureSocket();
+  if (!client) return () => undefined;
   client.on("chat_message", cb);
 
   return () => {
@@ -68,6 +80,10 @@ export function onChatMessage(cb: (message: ServerChatMessage) => void) {
 
 export function onSocketStatusChange(cb: (connected: boolean) => void) {
   const client = ensureSocket();
+  if (!client) {
+    cb(false);
+    return () => undefined;
+  }
   const onConnect = () => cb(true);
   const onDisconnect = () => cb(false);
 
@@ -88,6 +104,9 @@ export function sendChatMessage(payload: {
   text: string;
 }) {
   const client = ensureSocket();
+  if (!client) {
+    return Promise.resolve();
+  }
 
   return new Promise<void>((resolve, reject) => {
     client.emit("chat_message", payload, (ack?: { ok: boolean; error?: string }) => {
@@ -106,4 +125,3 @@ export function disconnectChatSocket() {
   socket.disconnect();
   socket = null;
 }
-
