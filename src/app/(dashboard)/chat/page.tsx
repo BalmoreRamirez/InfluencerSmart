@@ -2,11 +2,13 @@
 
 import { FormEvent } from "react";
 import { useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { AuthenticatedRoute } from "@/shared/components/auth/authenticated-route";
 import { useChatStore } from "@/shared/stores/chat-store";
 import { useAuthStore } from "@/shared/stores/auth-store";
 
 function ChatPageContent() {
+  const searchParams = useSearchParams();
   const session = useAuthStore((state) => state.session);
   const chatThread = useChatStore((state) => state.chatThread);
   const message = useChatStore((state) => state.message);
@@ -17,6 +19,7 @@ function ChatPageContent() {
   const setMessage = useChatStore((state) => state.setMessage);
   const setActiveConversation = useChatStore((state) => state.setActiveConversation);
   const sendMessage = useChatStore((state) => state.sendMessage);
+  const startConversation = useChatStore((state) => state.startConversation);
   const initializeChat = useChatStore((state) => state.initializeChat);
   const disconnectChat = useChatStore((state) => state.disconnectChat);
 
@@ -33,6 +36,16 @@ function ChatPageContent() {
       disconnectChat();
     };
   }, [disconnectChat, initializeChat, session]);
+
+  useEffect(() => {
+    if (!session || session.role !== "empresa") return;
+
+    const contactId = searchParams.get("contactId")?.trim();
+    const contactName = searchParams.get("contactName")?.trim();
+    if (!contactId || !contactName) return;
+
+    startConversation({ contactId, contactName }).catch(() => undefined);
+  }, [searchParams, session, startConversation]);
 
   function handleSendMessage(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

@@ -189,7 +189,7 @@ export default function ExplorePage() {
                 Ver perfil
               </Link>
               <Link
-                href="/chat"
+                href={`/chat?contactId=${encodeURIComponent(profile.id)}&contactName=${encodeURIComponent(profile.name)}`}
                 className="flex-1 rounded-full bg-[#0d0c15] px-4 py-2 text-center text-sm font-semibold text-white hover:bg-[#1f1c30]"
               >
                 Contactar

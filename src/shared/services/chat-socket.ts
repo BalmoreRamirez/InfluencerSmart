@@ -81,7 +81,8 @@ export function onChatMessage(cb: (message: ServerChatMessage) => void) {
 export function onSocketStatusChange(cb: (connected: boolean) => void) {
   const client = ensureSocket();
   if (!client) {
-    cb(false);
+    // Sin servidor de socket configurado, el chat sigue funcionando via Firestore.
+    cb(true);
     return () => undefined;
   }
   const onConnect = () => cb(true);
