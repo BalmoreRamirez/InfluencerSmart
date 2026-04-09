@@ -139,7 +139,7 @@ export default function InfluencerPublicProfilePage() {
 
         <div className="mt-8 flex gap-3">
           <Link
-            href={`/chat?contactId=${encodeURIComponent("influencer-valeria-torres")}&contactName=${encodeURIComponent(profile.fullName)}`}
+            href="/chat"
             className="rounded-xl bg-[#0d0c15] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#1f1c30]"
           >
             Enviar mensaje

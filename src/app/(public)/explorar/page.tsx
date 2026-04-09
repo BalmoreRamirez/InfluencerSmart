@@ -4,10 +4,6 @@ import Link from "next/link";
 import { useState, useMemo } from "react";
 import { influencers } from "@/shared/lib/mock-data";
 
-function toContactId(name: string) {
-  return `influencer-${name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
-}
-
 export default function ExplorePage() {
   const [filters, setFilters] = useState({
     country: "Todos",
@@ -136,7 +132,7 @@ export default function ExplorePage() {
                 Ver perfil
               </Link>
               <Link
-                href={`/chat?contactId=${encodeURIComponent(toContactId(profile.name))}&contactName=${encodeURIComponent(profile.name)}`}
+                href="/chat"
                 className="flex-1 rounded-full bg-[#0d0c15] px-4 py-2 text-center text-sm font-semibold text-white hover:bg-[#1f1c30]"
               >
                 Contactar

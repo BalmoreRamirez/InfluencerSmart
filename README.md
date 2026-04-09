@@ -132,26 +132,6 @@ if (!app) {
 }
 ```
 
-Reglas de Firestore incluidas en `firestore.rules`.
-
-- Se agrega la coleccion `usernames` para reservar usernames unicos sin exponer la coleccion `users`.
-- `users/{uid}` solo permite lectura/escritura del propio usuario.
-- `influencers/{uid}` lectura publica; `companies/{uid}` lectura privada del propietario.
-- `chats` y `messages` solo para participantes del chat.
-
-Publicar reglas (si usas Firebase CLI):
-
-```bash
-npm run firebase:rules:check
-npm run firebase:login
-npm run firebase:rules:deploy
-```
-
-Archivos de configuracion usados para deploy:
-
-- `firebase.json`
-- `.firebaserc` (proyecto default: `influencersmart-d6a3b`)
-
 ## Modelo de Colecciones (Analisis)
 
 ### 1) `users` (ancla de identidad)
