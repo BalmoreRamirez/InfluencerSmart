@@ -1,48 +1,65 @@
 "use client";
 
-import { FormEvent, useState } from "react";
-import { influencerProfile } from "@/shared/lib/mock-data";
+import { FormEvent, useEffect, useState } from "react";
 import { ProtectedRoute } from "@/shared/components/auth/protected-route";
+import { useAuthStore } from "@/shared/stores/auth-store";
+import {
+  getInfluencerOnboarding,
+  isAdult,
+  isValidDui,
+  saveInfluencerOnboarding,
+  type InfluencerOnboardingInput,
+} from "@/shared/services/firebase-onboarding-service";
 
-const influencerProfileStorageKey = "influencer-smart:influencer-profile";
-
-const initialForm = {
-  fullName: influencerProfile.fullName,
-  handle: influencerProfile.handle,
-  location: influencerProfile.location,
-  estimatedPrice: influencerProfile.estimatedPrice,
-  bio: influencerProfile.bio,
-  followers: influencerProfile.followers,
-  avgReach: influencerProfile.avgReach,
-  engagementRate: influencerProfile.engagementRate,
-  completedServices: String(influencerProfile.completedServices),
-  categories: influencerProfile.categories.join(", "),
-  languages: influencerProfile.languages.join(", "),
-  portfolio: influencerProfile.portfolio.join("\n"),
+const initialForm: InfluencerOnboardingInput = {
+  fullName: "",
+  birthDate: "",
+  dui: "",
+  location: "",
+  category: "",
+  instagramFollowers: "0",
+  tiktokFollowers: "0",
+  engagement: "0",
+  igReel: "0",
+  igPhoto: "0",
+  tkVideo: "0",
 };
 
-function getInitialForm() {
-  if (typeof window === "undefined") {
-    return initialForm;
-  }
-
-  try {
-    const raw = window.localStorage.getItem(influencerProfileStorageKey);
-    if (!raw) {
-      return initialForm;
-    }
-    const parsed = JSON.parse(raw) as typeof initialForm;
-    return { ...initialForm, ...parsed };
-  } catch {
-    return initialForm;
-  }
-}
-
 function InfluencerProfileContent() {
+  const session = useAuthStore((state) => state.session);
+  const markOnboardingComplete = useAuthStore((state) => state.markOnboardingComplete);
   const [saved, setSaved] = useState(false);
-  const [form, setForm] = useState(getInitialForm);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [form, setForm] = useState<InfluencerOnboardingInput>(initialForm);
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    async function loadProfile() {
+      if (!session?.uid) return;
+
+      const profile = await getInfluencerOnboarding(session.uid);
+      if (!profile) return;
+
+      setForm({
+        fullName: profile.full_name ?? "",
+        birthDate: profile.birth_date?.toDate().toISOString().slice(0, 10) ?? "",
+        dui: profile.dui ?? "",
+        location: profile.location ?? "",
+        category: profile.category ?? "",
+        instagramFollowers: String(profile.metrics.instagram_followers ?? 0),
+        tiktokFollowers: String(profile.metrics.tiktok_followers ?? 0),
+        engagement: String(profile.metrics.engagement ?? 0),
+        igReel: String(profile.prices.ig_reel ?? 0),
+        igPhoto: String(profile.prices.ig_photo ?? 0),
+        tkVideo: String(profile.prices.tk_video ?? 0),
+      });
+    }
+
+    loadProfile().catch(() => {
+      setError("No se pudo cargar el perfil actual.");
+    });
+  }, [session?.uid]);
 
   function validateForm() {
     const newErrors: Record<string, string> = {};
@@ -50,64 +67,63 @@ function InfluencerProfileContent() {
     if (!form.fullName.trim()) {
       newErrors.fullName = "El nombre completo es requerido";
     }
-    if (!form.handle.trim() || !form.handle.startsWith("@")) {
-      newErrors.handle = "El handle debe comenzar con @";
+    if (!form.birthDate || !isAdult(form.birthDate)) {
+      newErrors.birthDate = "Debes ser mayor de edad";
+    }
+    if (!isValidDui(form.dui)) {
+      newErrors.dui = "El DUI debe tener formato 12345678-9";
     }
     if (!form.location.trim()) {
-      newErrors.location = "La ubicación es requerida";
+      newErrors.location = "La ubicacion es requerida";
     }
-    if (!form.bio.trim() || form.bio.length < 20) {
-      newErrors.bio = "La biografía debe tener al menos 20 caracteres";
+    if (!form.category.trim()) {
+      newErrors.category = "La categoria es requerida";
     }
-    if (!form.estimatedPrice.trim()) {
-      newErrors.estimatedPrice = "El precio estimado es requerido";
+    if (Number(form.instagramFollowers) < 0) {
+      newErrors.instagramFollowers = "No puede ser negativo";
     }
-    if (categoriesList().length === 0) {
-      newErrors.categories = "Agrega al menos una categoría";
+    if (Number(form.tiktokFollowers) < 0) {
+      newErrors.tiktokFollowers = "No puede ser negativo";
+    }
+    if (Number(form.engagement) < 0) {
+      newErrors.engagement = "No puede ser negativo";
+    }
+    if (Number(form.igReel) < 0) {
+      newErrors.igReel = "No puede ser negativo";
+    }
+    if (Number(form.igPhoto) < 0) {
+      newErrors.igPhoto = "No puede ser negativo";
+    }
+    if (Number(form.tkVideo) < 0) {
+      newErrors.tkVideo = "No puede ser negativo";
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSaved(false);
-    
+    setError("");
+
     if (!validateForm()) {
       return;
     }
 
-    setLoading(true);
-    
-    setTimeout(() => {
-      localStorage.setItem(influencerProfileStorageKey, JSON.stringify(form));
+    try {
+      if (!session?.uid) throw new Error("No hay sesion activa");
+
+      setLoading(true);
+      await saveInfluencerOnboarding(session.uid, form);
+      markOnboardingComplete();
       setSaved(true);
       setLoading(false);
-      
       setTimeout(() => setSaved(false), 3000);
-    }, 500);
-  }
-
-  function categoriesList() {
-    return form.categories
-      .split(",")
-      .map((item) => item.trim())
-      .filter(Boolean);
-  }
-
-  function languagesList() {
-    return form.languages
-      .split(",")
-      .map((item) => item.trim())
-      .filter(Boolean);
-  }
-
-  function portfolioList() {
-    return form.portfolio
-      .split("\n")
-      .map((item) => item.trim())
-      .filter(Boolean);
+    } catch {
+      setError("No se pudo guardar el onboarding. Reintenta.");
+      setLoading(false);
+    }
   }
 
   return (
@@ -119,32 +135,28 @@ function InfluencerProfileContent() {
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#0d0c15]/55">
-              Perfil Influencer
+              Onboarding Influencer
             </p>
-            <h1 className="mt-2 text-2xl font-black text-[#0d0c15] sm:text-3xl">{form.fullName}</h1>
-            <p className="mt-1 text-sm font-medium text-[#0d0c15]/75">{form.handle}</p>
-            <p className="text-sm text-[#0d0c15]/70">{form.location}</p>
+            <h1 className="mt-2 text-2xl font-black text-[#0d0c15] sm:text-3xl">
+              {form.fullName || "Completa tu perfil"}
+            </h1>
+            <p className="mt-1 text-sm text-[#0d0c15]/70">{form.location || "Agrega tu ubicacion"}</p>
           </div>
-          <span className="rounded-full bg-[#c1b8ff] px-3 py-1 text-xs font-semibold text-[#0d0c15] sm:self-auto">
-            {form.estimatedPrice} por colaboracion
+          <span className="rounded-full bg-[#c1b8ff] px-3 py-1 text-xs font-semibold text-[#0d0c15]">
+            Paso 2: Completar perfil
           </span>
         </div>
 
         {saved ? (
           <p className="mt-4 rounded-xl border border-[#c1b8ff] bg-[#c1b8ff]/30 px-3 py-2 text-sm font-medium text-[#0d0c15]">
-            ✓ Cambios guardados en modo simulacion.
+            Perfil actualizado. Ya puedes usar la plataforma.
           </p>
         ) : null}
 
-        {Object.keys(errors).length > 0 ? (
-          <div className="mt-4 rounded-xl border border-[#fed97b] bg-[#fed97b]/30 px-3 py-2 text-sm text-[#0d0c15]">
-            <p className="font-semibold">Corrige los siguientes errores:</p>
-            <ul className="mt-1 list-disc pl-5">
-              {Object.values(errors).map((error, i) => (
-                <li key={i}>{error}</li>
-              ))}
-            </ul>
-          </div>
+        {error ? (
+          <p className="mt-4 rounded-xl border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {error}
+          </p>
         ) : null}
 
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -155,10 +167,18 @@ function InfluencerProfileContent() {
             error={errors.fullName}
           />
           <Field
-            label="Handle"
-            value={form.handle}
-            onChange={(value) => setForm((prev) => ({ ...prev, handle: value }))}
-            error={errors.handle}
+            label="Fecha de nacimiento"
+            value={form.birthDate}
+            onChange={(value) => setForm((prev) => ({ ...prev, birthDate: value }))}
+            type="date"
+            error={errors.birthDate}
+          />
+          <Field
+            label="DUI"
+            value={form.dui}
+            onChange={(value) => setForm((prev) => ({ ...prev, dui: value }))}
+            error={errors.dui}
+            placeholder="12345678-9"
           />
           <Field
             label="Ubicacion"
@@ -167,104 +187,56 @@ function InfluencerProfileContent() {
             error={errors.location}
           />
           <Field
-            label="Precio estimado"
-            value={form.estimatedPrice}
-            onChange={(value) => setForm((prev) => ({ ...prev, estimatedPrice: value }))}
-            error={errors.estimatedPrice}
+            label="Categoria"
+            value={form.category}
+            onChange={(value) => setForm((prev) => ({ ...prev, category: value }))}
+            error={errors.category}
           />
         </div>
 
-        <label className="mt-4 block text-sm font-semibold text-[#0d0c15]">
-          Bio
-          <textarea
-            rows={3}
-            value={form.bio}
-            onChange={(event) => setForm((prev) => ({ ...prev, bio: event.target.value }))}
-            className={`mt-1 w-full rounded-xl border px-3 py-2.5 text-sm outline-none focus:ring-2 ${
-              errors.bio
-                ? "border-red-400 ring-red-200"
-                : "border-black/15 ring-[#c1b8ff]"
-            }`}
-          />
-          {errors.bio ? <span className="mt-1 text-xs text-red-600">{errors.bio}</span> : null}
-        </label>
-
-        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <InfoCard label="Seguidores" value={form.followers} />
-          <InfoCard label="Alcance promedio" value={form.avgReach} />
-          <InfoCard label="Engagement" value={form.engagementRate} />
-          <InfoCard label="Servicios" value={form.completedServices} />
-        </div>
-
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <Field
-            label="Seguidores"
-            value={form.followers}
-            onChange={(value) => setForm((prev) => ({ ...prev, followers: value }))}
+            label="Seguidores Instagram"
+            value={form.instagramFollowers}
+            onChange={(value) => setForm((prev) => ({ ...prev, instagramFollowers: value }))}
+            type="number"
+            error={errors.instagramFollowers}
           />
           <Field
-            label="Alcance promedio"
-            value={form.avgReach}
-            onChange={(value) => setForm((prev) => ({ ...prev, avgReach: value }))}
+            label="Seguidores TikTok"
+            value={form.tiktokFollowers}
+            onChange={(value) => setForm((prev) => ({ ...prev, tiktokFollowers: value }))}
+            type="number"
+            error={errors.tiktokFollowers}
           />
           <Field
-            label="Engagement"
-            value={form.engagementRate}
-            onChange={(value) => setForm((prev) => ({ ...prev, engagementRate: value }))}
+            label="Engagement (%)"
+            value={form.engagement}
+            onChange={(value) => setForm((prev) => ({ ...prev, engagement: value }))}
+            type="number"
+            error={errors.engagement}
           />
           <Field
-            label="Servicios completados"
-            value={form.completedServices}
-            onChange={(value) => setForm((prev) => ({ ...prev, completedServices: value }))}
+            label="Precio IG Reel (USD)"
+            value={form.igReel}
+            onChange={(value) => setForm((prev) => ({ ...prev, igReel: value }))}
+            type="number"
+            error={errors.igReel}
           />
-        </div>
-
-        <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <article className="rounded-2xl border border-black/10 bg-[#f4f4f4] p-5">
-            <h2 className="text-lg font-bold text-[#0d0c15]">Categorias</h2>
-            <label className="mt-3 block text-xs font-semibold uppercase tracking-wide text-[#0d0c15]/60">
-              Separadas por coma
-              <input
-                value={form.categories}
-                onChange={(event) => setForm((prev) => ({ ...prev, categories: event.target.value }))}
-                className="mt-1 w-full rounded-xl border border-black/15 bg-white px-3 py-2 text-sm outline-none ring-[#c1b8ff] focus:ring-2"
-              />
-            </label>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {categoriesList().map((item) => (
-                <span
-                  key={item}
-                  className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-[#0d0c15] break-words"
-                >
-                  {item}
-                </span>
-              ))}
-            </div>
-            <h3 className="mt-5 text-sm font-bold text-[#0d0c15]">Idiomas</h3>
-            <input
-              value={form.languages}
-              onChange={(event) => setForm((prev) => ({ ...prev, languages: event.target.value }))}
-              className="mt-1 w-full rounded-xl border border-black/15 bg-white px-3 py-2 text-sm outline-none ring-[#c1b8ff] focus:ring-2"
-            />
-            <p className="mt-2 text-sm text-[#0d0c15]/75">{languagesList().join(" | ")}</p>
-          </article>
-
-          <article className="rounded-2xl border border-black/10 bg-[#f4f4f4] p-5">
-            <h2 className="text-lg font-bold text-[#0d0c15]">Portafolio destacado</h2>
-            <textarea
-              rows={4}
-              value={form.portfolio}
-              onChange={(event) => setForm((prev) => ({ ...prev, portfolio: event.target.value }))}
-              className="mt-3 w-full rounded-xl border border-black/15 bg-white px-3 py-2 text-sm outline-none ring-[#c1b8ff] focus:ring-2"
-            />
-            <ul className="mt-3 space-y-2 text-sm text-[#0d0c15]/78">
-              {portfolioList().map((project) => (
-                <li key={project} className="break-words">
-                  - {project}
-                </li>
-              ))}
-            </ul>
-          </article>
+          <Field
+            label="Precio IG Foto (USD)"
+            value={form.igPhoto}
+            onChange={(value) => setForm((prev) => ({ ...prev, igPhoto: value }))}
+            type="number"
+            error={errors.igPhoto}
+          />
+          <Field
+            label="Precio TikTok Video (USD)"
+            value={form.tkVideo}
+            onChange={(value) => setForm((prev) => ({ ...prev, tkVideo: value }))}
+            type="number"
+            error={errors.tkVideo}
+          />
         </div>
 
         <div className="mt-6">
@@ -273,7 +245,7 @@ function InfluencerProfileContent() {
             disabled={loading}
             className="w-full rounded-xl bg-[#0d0c15] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#1f1c30] disabled:opacity-50 sm:w-auto"
           >
-            {loading ? "Guardando..." : "Guardar cambios"}
+            {loading ? "Guardando..." : "Completar onboarding"}
           </button>
         </div>
       </form>
@@ -286,35 +258,25 @@ type FieldProps = {
   value: string;
   onChange: (value: string) => void;
   error?: string;
+  type?: string;
+  placeholder?: string;
 };
 
-function Field({ label, value, onChange, error }: FieldProps) {
+function Field({ label, value, onChange, error, type = "text", placeholder }: FieldProps) {
   return (
     <label className="text-sm font-semibold text-[#0d0c15]">
       {label}
       <input
+        type={type}
         value={value}
         onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
         className={`mt-1 w-full rounded-xl border px-3 py-2.5 text-sm outline-none focus:ring-2 ${
           error ? "border-red-400 ring-red-200" : "border-black/15 ring-[#c1b8ff]"
         }`}
       />
       {error ? <span className="mt-1 text-xs text-red-600">{error}</span> : null}
     </label>
-  );
-}
-
-type InfoCardProps = {
-  label: string;
-  value: string;
-};
-
-function InfoCard({ label, value }: InfoCardProps) {
-  return (
-    <div className="rounded-2xl border border-black/10 bg-white p-4">
-      <p className="text-xs font-semibold uppercase tracking-wide text-[#0d0c15]/60">{label}</p>
-      <p className="mt-1 text-xl font-black text-[#0d0c15]">{value}</p>
-    </div>
   );
 }
 
