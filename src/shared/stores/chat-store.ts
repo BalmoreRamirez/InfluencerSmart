@@ -45,6 +45,21 @@ let stopConversationsPoll: (() => void) | null = null;
 let stopMessagesPoll: (() => void) | null = null;
 let activeMessagesChannelId: string | null = null;
 
+function mergeConversationsPreservingActive(
+  mapped: ConversationItem[],
+  state: Pick<ChatState, "conversations" | "activeConversationId">
+) {
+  if (!state.activeConversationId) return mapped;
+
+  const activeInMapped = mapped.some((item) => item.id === state.activeConversationId);
+  if (activeInMapped) return mapped;
+
+  const activeFromState = state.conversations.find((item) => item.id === state.activeConversationId);
+  if (!activeFromState) return mapped;
+
+  return [activeFromState, ...mapped];
+}
+
 type ChatState = {
   chatThread: ChatMessage[];
   message: string;
@@ -218,7 +233,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
       }));
 
       set((state) => {
-        if (mapped.length === 0) {
+        const merged = mergeConversationsPreservingActive(mapped, state);
+        if (merged.length === 0) {
           return {
             conversations: EMPTY_CONVERSATIONS,
             activeConversationId: null,
@@ -228,14 +244,14 @@ export const useChatStore = create<ChatState>((set, get) => ({
         }
 
         const stillExists = state.activeConversationId
-          ? mapped.some((item) => item.id === state.activeConversationId)
+          ? merged.some((item) => item.id === state.activeConversationId)
           : false;
 
-        const nextActiveId = stillExists ? state.activeConversationId : mapped[0].id;
-        const nextActive = mapped.find((item) => item.id === nextActiveId) ?? mapped[0];
+        const nextActiveId = stillExists ? state.activeConversationId : merged[0].id;
+        const nextActive = merged.find((item) => item.id === nextActiveId) ?? merged[0];
 
         return {
-          conversations: mapped,
+          conversations: merged,
           activeConversationId: nextActive.id,
           activeContactName: nextActive.name,
         };
@@ -258,7 +274,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
         }));
 
         set((state) => {
-          if (mapped.length === 0) {
+          const merged = mergeConversationsPreservingActive(mapped, state);
+          if (merged.length === 0) {
             return {
               conversations: EMPTY_CONVERSATIONS,
               activeConversationId: null,
@@ -268,14 +285,14 @@ export const useChatStore = create<ChatState>((set, get) => ({
           }
 
           const stillExists = state.activeConversationId
-            ? mapped.some((item) => item.id === state.activeConversationId)
+            ? merged.some((item) => item.id === state.activeConversationId)
             : false;
 
-          const nextActiveId = stillExists ? state.activeConversationId : mapped[0].id;
-          const nextActive = mapped.find((item) => item.id === nextActiveId) ?? mapped[0];
+          const nextActiveId = stillExists ? state.activeConversationId : merged[0].id;
+          const nextActive = merged.find((item) => item.id === nextActiveId) ?? merged[0];
 
           return {
-            conversations: mapped,
+            conversations: merged,
             activeConversationId: nextActive.id,
             activeContactName: nextActive.name,
           };
@@ -305,19 +322,20 @@ export const useChatStore = create<ChatState>((set, get) => ({
         }));
 
         set((state) => {
-          if (mapped.length === 0) {
+          const merged = mergeConversationsPreservingActive(mapped, state);
+          if (merged.length === 0) {
             return state;
           }
 
           const stillExists = state.activeConversationId
-            ? mapped.some((item) => item.id === state.activeConversationId)
+            ? merged.some((item) => item.id === state.activeConversationId)
             : false;
 
-          const nextActiveId = stillExists ? state.activeConversationId : mapped[0].id;
-          const nextActive = mapped.find((item) => item.id === nextActiveId) ?? mapped[0];
+          const nextActiveId = stillExists ? state.activeConversationId : merged[0].id;
+          const nextActive = merged.find((item) => item.id === nextActiveId) ?? merged[0];
 
           return {
-            conversations: mapped,
+            conversations: merged,
             activeConversationId: nextActive.id,
             activeContactName: nextActive.name,
           };
