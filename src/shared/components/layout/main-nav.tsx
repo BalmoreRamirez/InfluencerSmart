@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/shared/stores/auth-store";
 import { useChatStore } from "@/shared/stores/chat-store";
@@ -22,6 +22,7 @@ function UserIcon() {
 
 export function MainNav() {
   const router = useRouter();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const session = useAuthStore((state) => state.session);
   const isHydrated = useAuthStore((state) => state.isHydrated);
   const hydrateSession = useAuthStore((state) => state.hydrateSession);
@@ -55,6 +56,11 @@ export function MainNav() {
     await logout();
     router.push("/");
     router.refresh();
+  }
+
+  async function handleMobileLogout() {
+    setMobileMenuOpen(false);
+    await handleLogout();
   }
 
   const sessionAvatarUrl = session?.profileImage?.trim()
@@ -160,101 +166,122 @@ export function MainNav() {
         </div>
 
         {/* Mobile Menu */}
-        <details className="group relative justify-self-end lg:hidden">
-          <summary className="inline-flex cursor-pointer list-none items-center gap-2 rounded-full border border-[#5d7932]/22 bg-[#f5faf0] px-4 py-2 text-sm font-semibold text-[#0c1117]">
-            <i className="bx bx-menu text-base leading-none" aria-hidden="true" />
+        <div className="justify-self-end lg:hidden">
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(true)}
+            className="inline-flex h-10 items-center gap-2 rounded-full border border-[#5d7932]/22 bg-[#f5faf0] px-4 text-sm font-semibold text-[#0c1117]"
+            aria-label="Abrir menú"
+          >
+            <i className="bx bx-menu-alt-right text-lg leading-none" aria-hidden="true" />
             Menú
-          </summary>
-          <div className="fixed inset-0 z-50 bg-[#0c1117]/45 p-3">
-            <div className="ml-auto w-[min(22rem,calc(100vw-1.5rem))] rounded-[1.75rem] border border-white/10 bg-[#0c1117] p-3 text-white shadow-[0_18px_45px_rgba(5,7,10,0.45)]">
-              <div className="flex items-center justify-between border-b border-white/10 px-2 pb-3">
-                <span className="text-xs font-semibold uppercase tracking-[0.18em] text-white/65">Navegación</span>
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/15 text-white/80">
-                  <i className="bx bx-x text-lg leading-none" aria-hidden="true" />
-                </span>
-              </div>
+          </button>
+        </div>
+      </div>
 
-              {session ? (
-                <div className="mt-3 rounded-2xl border border-white/10 bg-white/5 px-3 py-3">
-                  <div className="flex items-center gap-3">
-                    <Image
-                      src={sessionAvatarUrl}
-                      alt={`Perfil de ${sessionRoleLabel}`}
-                      width={44}
-                      height={44}
-                      className="h-11 w-11 rounded-full border border-white/15 object-cover"
-                    />
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-white">{session.username}</p>
-                      <p className="truncate text-xs text-white/60">{session.email}</p>
-                    </div>
+      {mobileMenuOpen ? (
+        <div className="fixed inset-0 z-50 bg-[#0c1117]/45 p-3 lg:hidden" onClick={() => setMobileMenuOpen(false)}>
+          <div
+            className="ml-auto w-[min(22rem,calc(100vw-1.5rem))] rounded-[1.75rem] border border-white/10 bg-[#0c1117] p-3 text-white shadow-[0_18px_45px_rgba(5,7,10,0.45)]"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-white/10 px-2 pb-3">
+              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-white/65">Navegación</span>
+              <button
+                type="button"
+                onClick={() => setMobileMenuOpen(false)}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/15 text-white/80"
+                aria-label="Cerrar menú"
+              >
+                <i className="bx bx-x text-lg leading-none" aria-hidden="true" />
+              </button>
+            </div>
+
+            {session ? (
+              <div className="mt-3 rounded-2xl border border-white/10 bg-white/5 px-3 py-3">
+                <div className="flex items-center gap-3">
+                  <Image
+                    src={sessionAvatarUrl}
+                    alt={`Perfil de ${sessionRoleLabel}`}
+                    width={44}
+                    height={44}
+                    className="h-11 w-11 rounded-full border border-white/15 object-cover"
+                  />
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-white">{session.username}</p>
+                    <p className="truncate text-xs text-white/60">{session.email}</p>
                   </div>
                 </div>
-              ) : null}
-
-              <nav className="mt-3 grid gap-2">
-                {navItems.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className="rounded-xl border border-white/10 px-4 py-3 text-sm font-medium text-white/90 transition hover:bg-white/10"
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-                <Link
-                  href="/chat"
-                  className="inline-flex items-center justify-between rounded-xl border border-white/10 px-4 py-3 text-sm font-medium text-white/90 transition hover:bg-white/10"
-                >
-                  <span className="inline-flex items-center gap-2">
-                    <MessageIcon />
-                    Chat
-                  </span>
-                  {unreadMessages > 0 ? (
-                    <span className="rounded-full bg-[#d8ff85] px-2 py-0.5 text-xs font-bold text-[#0c1117]">
-                      {unreadLabel}
-                    </span>
-                  ) : null}
-                </Link>
-              </nav>
-
-              <div className="mt-3 grid gap-2 border-t border-white/10 pt-3">
-                {session ? (
-                  <>
-                    <Link
-                      href={profileHref}
-                      className="rounded-xl border border-white/10 px-4 py-3 text-sm font-semibold text-white/90 transition hover:bg-white/10"
-                    >
-                      Ver perfil
-                    </Link>
-                    <button
-                      onClick={handleLogout}
-                      className="rounded-xl border border-[#d8ff85]/35 bg-[#d8ff85]/90 px-4 py-3 text-sm font-semibold text-[#0c1117] transition hover:bg-[#d8ff85]"
-                    >
-                      Cerrar sesión
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <Link
-                      href="/login"
-                      className="rounded-xl border border-white/10 px-4 py-3 text-center text-sm font-semibold text-white/90 transition hover:bg-white/10"
-                    >
-                      Iniciar sesión
-                    </Link>
-                    <Link
-                      href="/registro"
-                      className="rounded-xl bg-[#d8ff85] px-4 py-3 text-center text-sm font-semibold text-[#0c1117]"
-                    >
-                      Empezar
-                    </Link>
-                  </>
-                )}
               </div>
+            ) : null}
+
+            <nav className="mt-3 grid gap-2">
+              {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="rounded-xl border border-white/10 px-4 py-3 text-sm font-medium text-white/90 transition hover:bg-white/10"
+                >
+                  {item.label}
+                </Link>
+              ))}
+              <Link
+                href="/chat"
+                onClick={() => setMobileMenuOpen(false)}
+                className="inline-flex items-center justify-between rounded-xl border border-white/10 px-4 py-3 text-sm font-medium text-white/90 transition hover:bg-white/10"
+              >
+                <span className="inline-flex items-center gap-2">
+                  <MessageIcon />
+                  Chat
+                </span>
+                {unreadMessages > 0 ? (
+                  <span className="rounded-full bg-[#d8ff85] px-2 py-0.5 text-xs font-bold text-[#0c1117]">
+                    {unreadLabel}
+                  </span>
+                ) : null}
+              </Link>
+            </nav>
+
+            <div className="mt-3 grid gap-2 border-t border-white/10 pt-3">
+              {session ? (
+                <>
+                  <Link
+                    href={profileHref}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="rounded-xl border border-white/10 px-4 py-3 text-sm font-semibold text-white/90 transition hover:bg-white/10"
+                  >
+                    Ver perfil
+                  </Link>
+                  <button
+                    onClick={handleMobileLogout}
+                    className="rounded-xl border border-[#d8ff85]/35 bg-[#d8ff85]/90 px-4 py-3 text-sm font-semibold text-[#0c1117] transition hover:bg-[#d8ff85]"
+                  >
+                    Cerrar sesión
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="rounded-xl border border-white/10 px-4 py-3 text-center text-sm font-semibold text-white/90 transition hover:bg-white/10"
+                  >
+                    Iniciar sesión
+                  </Link>
+                  <Link
+                    href="/registro"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="rounded-xl bg-[#d8ff85] px-4 py-3 text-center text-sm font-semibold text-[#0c1117]"
+                  >
+                    Empezar
+                  </Link>
+                </>
+              )}
             </div>
           </div>
-        </details>
-      </div>
+        </div>
+      ) : null}
     </header>
   );
 }
