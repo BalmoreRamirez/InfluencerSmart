@@ -8,10 +8,6 @@ import {
   sendChatMessage,
 } from "@/shared/services/chat-socket";
 import {
-  subscribeChatMessages,
-  subscribeUserConversations,
-} from "@/shared/services/firebase-chat-service";
-import {
   fetchConversationsViaApi,
   fetchMessagesViaApi,
   markConversationReadViaApi,
@@ -39,8 +35,6 @@ type ConversationItem = {
 const EMPTY_THREAD: ChatMessage[] = [];
 const EMPTY_CONVERSATIONS: ConversationItem[] = [];
 
-let stopConversationsListener: (() => void) | null = null;
-let stopMessagesListener: (() => void) | null = null;
 let stopSocketStatusListener: (() => void) | null = null;
 let stopConversationsPoll: (() => void) | null = null;
 let stopMessagesPoll: (() => void) | null = null;
@@ -145,9 +139,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         };
       }
 
-      stopMessagesListener?.();
       stopMessagesPoll?.();
-      stopMessagesListener = null;
       stopMessagesPoll = null;
       activeMessagesChannelId = conversationId;
 
@@ -155,42 +147,24 @@ export const useChatStore = create<ChatState>((set, get) => ({
       leaveChatRoom(roomId);
       joinChatRoom({ roomId, userId: state.currentUserId, role: state.currentUserRole });
 
-      stopMessagesListener = subscribeChatMessages(
-        conversationId,
-        state.currentUserId,
-        state.currentUserRole,
-        (rows) => {
-          set({
-            chatThread: rows.map((item) => ({
-              by: item.by,
-              senderName: item.senderName,
-              senderProfileImage: item.senderProfileImage,
-              text: item.text,
-              at: item.at,
-            })),
-          });
-        },
-        () => {
-          const loadMessages = async () => {
-            const rows = await fetchMessagesViaApi(conversationId, state.currentUserRole!, 40);
-            set({
-              chatThread: rows.map((item) => ({
-                by: item.by,
-                senderName: item.senderName,
-                senderProfileImage: item.senderProfileImage,
-                text: item.text,
-                at: item.at,
-              })),
-            });
-          };
+      const loadMessages = async () => {
+        const rows = await fetchMessagesViaApi(conversationId, state.currentUserRole!, 40);
+        set({
+          chatThread: rows.map((item) => ({
+            by: item.by,
+            senderName: item.senderName,
+            senderProfileImage: item.senderProfileImage,
+            text: item.text,
+            at: item.at,
+          })),
+        });
+      };
 
-          loadMessages().catch(() => undefined);
-          const timer = setInterval(() => {
-            loadMessages().catch(() => undefined);
-          }, 15000);
-          stopMessagesPoll = () => clearInterval(timer);
-        }
-      );
+      loadMessages().catch(() => undefined);
+      const timer = setInterval(() => {
+        loadMessages().catch(() => undefined);
+      }, 15000);
+      stopMessagesPoll = () => clearInterval(timer);
 
       markConversationReadViaApi(conversationId).catch(() => undefined);
 
@@ -203,10 +177,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
     });
   },
   initializeChat: ({ userId, userName, role }) => {
-    if (get().currentUserId === userId && stopConversationsListener) return;
+    if (get().currentUserId === userId && stopConversationsPoll) return;
 
-    stopConversationsListener?.();
-    stopMessagesListener?.();
     stopSocketStatusListener?.();
     stopConversationsPoll?.();
     stopMessagesPoll?.();
@@ -226,7 +198,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
       set({ connected });
     });
 
-    stopConversationsListener = subscribeUserConversations(userId, (rows) => {
+    const loadConversations = async () => {
+      const rows = await fetchConversationsViaApi();
       const mapped: ConversationItem[] = rows.map((item) => ({
         id: item.chatId,
         contactId: item.contactId,
@@ -264,92 +237,13 @@ export const useChatStore = create<ChatState>((set, get) => ({
       if (nextActiveId && nextActiveId !== activeMessagesChannelId) {
         get().setActiveConversation(nextActiveId);
       }
-    },
-    () => {
-      const loadConversations = async () => {
-        const rows = await fetchConversationsViaApi();
-        const mapped: ConversationItem[] = rows.map((item) => ({
-          id: item.chatId,
-          contactId: item.contactId,
-          name: item.contactName,
-          last: item.last,
-          unread: item.unread,
-        }));
+    };
 
-        set((state) => {
-          const merged = mergeConversationsPreservingActive(mapped, state);
-          if (merged.length === 0) {
-            return {
-              conversations: EMPTY_CONVERSATIONS,
-              activeConversationId: null,
-              activeContactName: null,
-              chatThread: EMPTY_THREAD,
-            };
-          }
-
-          const stillExists = state.activeConversationId
-            ? merged.some((item) => item.id === state.activeConversationId)
-            : false;
-
-          const nextActiveId = stillExists ? state.activeConversationId : merged[0].id;
-          const nextActive = merged.find((item) => item.id === nextActiveId) ?? merged[0];
-
-          return {
-            conversations: merged,
-            activeConversationId: nextActive.id,
-            activeContactName: nextActive.name,
-          };
-        });
-
-        const nextActiveId = get().activeConversationId;
-        if (nextActiveId && nextActiveId !== activeMessagesChannelId) {
-          get().setActiveConversation(nextActiveId);
-        }
-      };
-
+    loadConversations().catch(() => undefined);
+    const timer = setInterval(() => {
       loadConversations().catch(() => undefined);
-      const timer = setInterval(() => {
-        loadConversations().catch(() => undefined);
-      }, 15000);
-      stopConversationsPoll = () => clearInterval(timer);
-    });
-
-    fetchConversationsViaApi()
-      .then((rows) => {
-        const mapped: ConversationItem[] = rows.map((item) => ({
-          id: item.chatId,
-          contactId: item.contactId,
-          name: item.contactName,
-          last: item.last,
-          unread: item.unread,
-        }));
-
-        set((state) => {
-          const merged = mergeConversationsPreservingActive(mapped, state);
-          if (merged.length === 0) {
-            return state;
-          }
-
-          const stillExists = state.activeConversationId
-            ? merged.some((item) => item.id === state.activeConversationId)
-            : false;
-
-          const nextActiveId = stillExists ? state.activeConversationId : merged[0].id;
-          const nextActive = merged.find((item) => item.id === nextActiveId) ?? merged[0];
-
-          return {
-            conversations: merged,
-            activeConversationId: nextActive.id,
-            activeContactName: nextActive.name,
-          };
-        });
-
-        const nextActiveId = get().activeConversationId;
-        if (nextActiveId && nextActiveId !== activeMessagesChannelId) {
-          get().setActiveConversation(nextActiveId);
-        }
-      })
-      .catch(() => undefined);
+    }, 15000);
+    stopConversationsPoll = () => clearInterval(timer);
   },
   disconnectChat: () => {
     const currentUserId = get().currentUserId;
@@ -360,13 +254,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
       leaveChatRoom(createRoomId(currentUserId, currentContactId));
     }
 
-    stopConversationsListener?.();
-    stopMessagesListener?.();
     stopSocketStatusListener?.();
     stopConversationsPoll?.();
     stopMessagesPoll?.();
-    stopConversationsListener = null;
-    stopMessagesListener = null;
     stopSocketStatusListener = null;
     stopConversationsPoll = null;
     stopMessagesPoll = null;
@@ -429,7 +319,13 @@ export const useChatStore = create<ChatState>((set, get) => ({
         activeContactName: apiResult.contactName,
         conversations: state.conversations.map((item) =>
           item.id === activeConversationId || item.id === apiResult.chatId
-            ? { ...item, id: apiResult.chatId, contactId: apiResult.contactId, name: apiResult.contactName, last: message.trim() }
+            ? {
+                ...item,
+                id: apiResult.chatId,
+                contactId: apiResult.contactId,
+                name: apiResult.contactName,
+                last: message.trim(),
+              }
             : item
         ),
       }));
@@ -459,3 +355,4 @@ export const useChatStore = create<ChatState>((set, get) => ({
       activeContactName: null,
     }),
 }));
+

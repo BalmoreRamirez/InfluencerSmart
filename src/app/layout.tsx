@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import { MainNav } from "@/shared/components/layout/main-nav";
 import { MobileBottomNav } from "@/shared/components/layout/mobile-bottom-nav";
+import "boxicons/css/boxicons.min.css";
 import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
