@@ -1,4 +1,4 @@
-import { getDocs, query } from "firebase/firestore";
+import { getDocs, query } from "firebase/firestore/lite";
 import { influencersCollectionRef } from "@/shared/lib/firebase-collections";
 
 export type PublicInfluencerCard = {

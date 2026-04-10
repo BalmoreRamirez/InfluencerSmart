@@ -1,6 +1,6 @@
 import { getApps, initializeApp, type FirebaseApp } from "firebase/app";
 import { getAuth, type Auth } from "firebase/auth";
-import { getFirestore, type Firestore } from "firebase/firestore";
+import { getFirestore, type Firestore } from "firebase/firestore/lite";
 
 type FirebaseWebConfig = {
   apiKey: string;
@@ -36,4 +36,3 @@ const db: Firestore | null = app ? getFirestore(app) : null;
 export const isFirebaseEnabled = Boolean(app && auth && db);
 
 export { app, auth, db, firebaseConfig, hasValidFirebaseConfig };
-

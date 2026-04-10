@@ -4,7 +4,7 @@ import {
   type CollectionReference,
   type DocumentReference,
   type Timestamp,
-} from "firebase/firestore";
+} from "firebase/firestore/lite";
 import { db } from "@/shared/lib/firebase";
 
 export type FirebaseRole = "influencer" | "company";

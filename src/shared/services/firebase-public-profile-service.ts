@@ -1,4 +1,4 @@
-import { getDoc, getDocs, query, where } from "firebase/firestore";
+import { getDoc, getDocs, query, where } from "firebase/firestore/lite";
 import {
   influencerDocRef,
   influencersCollectionRef,

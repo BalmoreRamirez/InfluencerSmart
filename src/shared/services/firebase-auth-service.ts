@@ -11,7 +11,7 @@ import {
   getDoc,
   serverTimestamp,
   setDoc,
-} from "firebase/firestore";
+} from "firebase/firestore/lite";
 import { auth, isFirebaseEnabled } from "@/shared/lib/firebase";
 import {
   companyDocRef,

@@ -2,15 +2,9 @@ import {
   addDoc,
   doc,
   getDoc,
-  limit,
-  onSnapshot,
-  orderBy,
-  query,
   serverTimestamp,
   setDoc,
-  where,
-  type Unsubscribe,
-} from "firebase/firestore";
+} from "firebase/firestore/lite";
 import { chatsCollectionRef, chatDocRef, chatMessagesCollectionRef } from "@/shared/lib/firebase-collections";
 
 type ChatRole = "influencer" | "empresa";
@@ -42,94 +36,6 @@ function formatHourLabel(value: Date) {
 
 function fallbackContactLabel(uid: string) {
   return `Contacto ${uid.slice(0, 6)}`;
-}
-
-export function subscribeUserConversations(
-  userId: string,
-  onData: (rows: ConversationRecord[]) => void,
-  onError?: (error: Error) => void
-): Unsubscribe {
-  const q = query(
-    chatsCollectionRef(),
-    where("participants", "array-contains", userId),
-    orderBy("updated_at", "desc")
-  );
-
-  return onSnapshot(
-    q,
-    (snap) => {
-      const rows: ConversationRecord[] = [];
-
-      snap.forEach((item) => {
-        const data = item.data();
-        if (!Array.isArray(data.participants) || !data.participants.includes(userId)) return;
-
-        const contactId = data.participants.find((id) => id !== userId) ?? userId;
-        const participantNames = (data as { participant_names?: Record<string, string> }).participant_names;
-        const contactName = participantNames?.[contactId] ?? fallbackContactLabel(contactId);
-
-        rows.push({
-          chatId: item.id,
-          contactId,
-          contactName,
-          last: data.last_message ?? "",
-          unread:
-            typeof (data as { unread_counts?: Record<string, number> }).unread_counts?.[userId] === "number"
-              ? (data as { unread_counts?: Record<string, number> }).unread_counts?.[userId] ?? 0
-              : data.last_sender_id && data.last_sender_id !== userId
-                ? 1
-                : 0,
-        });
-      });
-
-      onData(rows);
-    },
-    (error) => {
-      onError?.(error as Error);
-    }
-  );
-}
-
-export function subscribeChatMessages(
-  chatId: string,
-  currentUserId: string,
-  currentUserRole: ChatRole,
-  onData: (rows: ChatMessageRecord[]) => void,
-  onError?: (error: Error) => void,
-  options?: { limitCount?: number }
-): Unsubscribe {
-  const limitCount = options?.limitCount ?? 40;
-  const q = query(chatMessagesCollectionRef(chatId), orderBy("timestamp", "desc"), limit(limitCount));
-
-  return onSnapshot(
-    q,
-    (snap) => {
-      const rows = snap.docs.map((item) => {
-        const data = item.data();
-        const ownMessage = data.sender_id === currentUserId;
-        const role: ChatRole = ownMessage
-          ? currentUserRole
-          : currentUserRole === "empresa"
-            ? "influencer"
-            : "empresa";
-
-        return {
-          id: item.id,
-          by: role,
-          senderName: data.sender_name ?? (ownMessage ? "Tú" : "Contacto"),
-          senderProfileImage: data.sender_profile_image ?? "",
-          text: data.text,
-          at: data.timestamp?.toDate ? formatHourLabel(data.timestamp.toDate()) : "--:--",
-          timestampMs: data.timestamp?.toDate ? data.timestamp.toDate().getTime() : 0,
-        } satisfies ChatMessageRecord;
-      }).sort((a, b) => a.timestampMs - b.timestampMs);
-
-      onData(rows);
-    },
-    (error) => {
-      onError?.(error as Error);
-    }
-  );
 }
 
 export async function persistChatMessage(params: {

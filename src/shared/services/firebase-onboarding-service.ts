@@ -5,7 +5,7 @@ import {
   setDoc,
   updateDoc,
   type FieldValue,
-} from "firebase/firestore";
+} from "firebase/firestore/lite";
 import { companyDocRef, influencerDocRef, userDocRef, type CompanyDoc, type InfluencerDoc } from "@/shared/lib/firebase-collections";
 
 export type InfluencerOnboardingInput = {
