@@ -10,6 +10,7 @@ type MessageRow = {
   senderProfileImage: string;
   text: string;
   at: string;
+  timestampMs: number;
 };
 
 function formatHourLabel(value: Date) {
@@ -43,6 +44,8 @@ export async function GET(request: NextRequest) {
     const chatId = request.nextUrl.searchParams.get("chatId")?.trim();
     const roleParam = request.nextUrl.searchParams.get("role");
     const currentUserRole: ChatRole = roleParam === "influencer" ? "influencer" : "empresa";
+    const parsedLimit = Number(request.nextUrl.searchParams.get("limit") ?? "40");
+    const limitCount = Number.isFinite(parsedLimit) ? Math.max(1, Math.min(100, parsedLimit)) : 40;
 
     if (!chatId) {
       return NextResponse.json({ error: "chatId es requerido" }, { status: 400 });
@@ -60,7 +63,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado en este chat" }, { status: 403 });
     }
 
-    const messagesSnap = await chatRef.collection("messages").orderBy("timestamp", "asc").get();
+    const messagesSnap = await chatRef.collection("messages").orderBy("timestamp", "desc").limit(limitCount).get();
     const rows: MessageRow[] = messagesSnap.docs.map((doc) => {
       const data = doc.data();
       const ownMessage = data.sender_id === uid;
@@ -77,8 +80,9 @@ export async function GET(request: NextRequest) {
         senderProfileImage: (data.sender_profile_image as string | undefined) ?? "",
         text: (data.text as string | undefined) ?? "",
         at: data.timestamp?.toDate ? formatHourLabel(data.timestamp.toDate()) : "--:--",
+        timestampMs: data.timestamp?.toDate ? data.timestamp.toDate().getTime() : 0,
       };
-    });
+    }).sort((a, b) => a.timestampMs - b.timestampMs);
 
     return NextResponse.json({ ok: true, rows });
   } catch (error) {
@@ -88,4 +92,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-

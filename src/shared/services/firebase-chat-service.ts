@@ -2,6 +2,7 @@ import {
   addDoc,
   doc,
   getDoc,
+  limit,
   onSnapshot,
   orderBy,
   query,
@@ -29,6 +30,7 @@ type ChatMessageRecord = {
   senderProfileImage: string;
   text: string;
   at: string;
+  timestampMs: number;
 };
 
 function formatHourLabel(value: Date) {
@@ -71,7 +73,12 @@ export function subscribeUserConversations(
           contactId,
           contactName,
           last: data.last_message ?? "",
-          unread: data.last_sender_id && data.last_sender_id !== userId ? 1 : 0,
+          unread:
+            typeof (data as { unread_counts?: Record<string, number> }).unread_counts?.[userId] === "number"
+              ? (data as { unread_counts?: Record<string, number> }).unread_counts?.[userId] ?? 0
+              : data.last_sender_id && data.last_sender_id !== userId
+                ? 1
+                : 0,
         });
       });
 
@@ -88,9 +95,11 @@ export function subscribeChatMessages(
   currentUserId: string,
   currentUserRole: ChatRole,
   onData: (rows: ChatMessageRecord[]) => void,
-  onError?: (error: Error) => void
+  onError?: (error: Error) => void,
+  options?: { limitCount?: number }
 ): Unsubscribe {
-  const q = query(chatMessagesCollectionRef(chatId), orderBy("timestamp", "asc"));
+  const limitCount = options?.limitCount ?? 40;
+  const q = query(chatMessagesCollectionRef(chatId), orderBy("timestamp", "desc"), limit(limitCount));
 
   return onSnapshot(
     q,
@@ -111,8 +120,9 @@ export function subscribeChatMessages(
           senderProfileImage: data.sender_profile_image ?? "",
           text: data.text,
           at: data.timestamp?.toDate ? formatHourLabel(data.timestamp.toDate()) : "--:--",
+          timestampMs: data.timestamp?.toDate ? data.timestamp.toDate().getTime() : 0,
         } satisfies ChatMessageRecord;
-      });
+      }).sort((a, b) => a.timestampMs - b.timestampMs);
 
       onData(rows);
     },

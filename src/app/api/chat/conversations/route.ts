@@ -52,7 +52,12 @@ export async function GET(request: NextRequest) {
           contactId,
           contactName: participantNames[contactId] ?? fallbackContactLabel(contactId),
           last: typeof data.last_message === "string" ? data.last_message : "",
-          unread: data.last_sender_id && data.last_sender_id !== uid ? 1 : 0,
+          unread:
+            typeof (data.unread_counts as Record<string, number> | undefined)?.[uid] === "number"
+              ? (data.unread_counts as Record<string, number>)[uid]
+              : data.last_sender_id && data.last_sender_id !== uid
+                ? 1
+                : 0,
           updatedAtMs,
         };
       })

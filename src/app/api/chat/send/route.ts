@@ -34,11 +34,26 @@ async function resolveContact(adminDb: FirebaseFirestore.Firestore, contactId: s
   const rawSlug = contactId.startsWith("influencer-") ? contactId.slice("influencer-".length) : contactId;
   const expectedSlug = toSlug(rawSlug || contactName);
 
-  const influencerSnap = await adminDb.collection("influencers").get();
-  const match = influencerSnap.docs.find((doc) => {
-    const fullName = (doc.data().full_name as string | undefined)?.trim() ?? "";
-    return toSlug(fullName) === expectedSlug || toSlug(fullName) === toSlug(contactName);
-  });
+  const usersSnap = await adminDb
+    .collection("users")
+    .where("username", "==", expectedSlug)
+    .limit(1)
+    .get();
+  if (!usersSnap.empty) {
+    const userDoc = usersSnap.docs[0];
+    return {
+      uid: userDoc.id,
+      displayName: (userDoc.data().username as string | undefined)?.trim() || contactName,
+      profileImage: (userDoc.data().profile_image as string | undefined)?.trim() || "",
+    };
+  }
+
+  const influencerQuery = await adminDb
+    .collection("influencers")
+    .where("full_name", "==", contactName)
+    .limit(1)
+    .get();
+  const match = influencerQuery.docs[0];
 
   if (!match) {
     throw new Error("No se encontró el influencer de destino.");
@@ -99,6 +114,8 @@ export async function POST(request: NextRequest) {
     const userSnap = await adminDb.collection("users").doc(uid).get();
     const userName = (userSnap.data()?.username as string | undefined)?.trim() || `Usuario ${uid.slice(0, 6)}`;
     const userProfileImage = (userSnap.data()?.profile_image as string | undefined)?.trim() || "";
+    const existingUnread = (chatSnap.data()?.unread_counts as Record<string, number> | undefined) ?? {};
+    const nextUnreadForTarget = (existingUnread[target.uid] ?? 0) + 1;
 
     if (!chatSnap.exists) {
       await chatRef.set({
@@ -114,6 +131,10 @@ export async function POST(request: NextRequest) {
         is_unlocked: true,
         last_message: text,
         last_sender_id: uid,
+        unread_counts: {
+          [uid]: 0,
+          [target.uid]: nextUnreadForTarget,
+        },
         updated_at: adminServerTimestamp(),
       });
     } else {
@@ -126,6 +147,11 @@ export async function POST(request: NextRequest) {
         {
           last_message: text,
           last_sender_id: uid,
+          unread_counts: {
+            ...existingUnread,
+            [uid]: 0,
+            [target.uid]: nextUnreadForTarget,
+          },
           updated_at: adminServerTimestamp(),
           participant_names: {
             [uid]: userName,

@@ -56,6 +56,7 @@ export type ChatDoc = {
   is_unlocked: boolean;
   last_message: string;
   last_sender_id?: string;
+  unread_counts?: Record<string, number>;
   updated_at: Timestamp | null;
 };
 

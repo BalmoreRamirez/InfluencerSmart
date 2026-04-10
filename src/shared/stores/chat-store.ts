@@ -14,6 +14,7 @@ import {
 import {
   fetchConversationsViaApi,
   fetchMessagesViaApi,
+  markConversationReadViaApi,
   sendMessageViaApi,
 } from "@/shared/services/chat-api-service";
 
@@ -171,7 +172,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         },
         () => {
           const loadMessages = async () => {
-            const rows = await fetchMessagesViaApi(conversationId, state.currentUserRole!);
+            const rows = await fetchMessagesViaApi(conversationId, state.currentUserRole!, 40);
             set({
               chatThread: rows.map((item) => ({
                 by: item.by,
@@ -186,10 +187,12 @@ export const useChatStore = create<ChatState>((set, get) => ({
           loadMessages().catch(() => undefined);
           const timer = setInterval(() => {
             loadMessages().catch(() => undefined);
-          }, 3000);
+          }, 15000);
           stopMessagesPoll = () => clearInterval(timer);
         }
       );
+
+      markConversationReadViaApi(conversationId).catch(() => undefined);
 
       return {
         activeConversationId: conversationId,
@@ -307,7 +310,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       loadConversations().catch(() => undefined);
       const timer = setInterval(() => {
         loadConversations().catch(() => undefined);
-      }, 3000);
+      }, 15000);
       stopConversationsPoll = () => clearInterval(timer);
     });
 

@@ -31,6 +31,7 @@ type MessageViaApi = {
   senderProfileImage: string;
   text: string;
   at: string;
+  timestampMs?: number;
 };
 
 async function getAuthToken() {
@@ -85,11 +86,11 @@ export async function fetchConversationsViaApi() {
   return data.rows;
 }
 
-export async function fetchMessagesViaApi(chatId: string, role: ChatRole) {
+export async function fetchMessagesViaApi(chatId: string, role: ChatRole, limitCount = 40) {
   const token = await getAuthToken();
 
   const response = await fetch(
-    `/api/chat/messages?chatId=${encodeURIComponent(chatId)}&role=${encodeURIComponent(role)}`,
+    `/api/chat/messages?chatId=${encodeURIComponent(chatId)}&role=${encodeURIComponent(role)}&limit=${encodeURIComponent(String(limitCount))}`,
     {
       method: "GET",
       headers: {
@@ -109,4 +110,22 @@ export async function fetchMessagesViaApi(chatId: string, role: ChatRole) {
   };
 
   return data.rows;
+}
+
+export async function markConversationReadViaApi(chatId: string) {
+  const token = await getAuthToken();
+
+  const response = await fetch("/api/chat/read", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ chatId }),
+  });
+
+  if (!response.ok) {
+    const data = (await response.json().catch(() => null)) as { error?: string } | null;
+    throw new Error(data?.error ?? "No se pudo marcar como leído.");
+  }
 }
