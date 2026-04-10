@@ -1,11 +1,16 @@
 @import "tailwindcss";
 
 :root {
-  --color-brand: #c1b8ff;
-  --color-highlight: #fed97b;
-  --color-surface: #ffffff;
-  --color-ink: #0d0c15;
-  --color-muted: #f4f4f4;
+  --color-black: #0c1117;
+  --color-mint-green: #42d87f;
+  --color-spa-green: #5d7932;
+  --color-soft-lime: #d8ff85;
+  --color-uranian-blue: #c0e2ff;
+  --color-brand: var(--color-mint-green);
+  --color-highlight: var(--color-soft-lime);
+  --color-surface: #f8fbf8;
+  --color-ink: var(--color-black);
+  --color-muted: #edf4ea;
   --background: var(--color-surface);
   --foreground: var(--color-ink);
 }
@@ -13,14 +18,35 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-outfit);
+  --font-sans: var(--font-plus-jakarta-sans);
 }
 
 body {
   background:
-    radial-gradient(circle at 5% 15%, rgba(193, 184, 255, 0.45), transparent 35%),
-    radial-gradient(circle at 95% 5%, rgba(254, 217, 123, 0.4), transparent 28%),
+    radial-gradient(circle at 10% 10%, rgba(216, 255, 133, 0.45), transparent 35%),
+    radial-gradient(circle at 95% 5%, rgba(192, 226, 255, 0.38), transparent 28%),
     var(--background);
   color: var(--foreground);
-  font-family: var(--font-outfit), sans-serif;
+  font-family: var(--font-plus-jakarta-sans), sans-serif;
+  font-weight: 500;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+button,
+.btn,
+[role="button"] {
+  font-weight: 700;
+}
+
+a {
+  font-weight: 600;
 }

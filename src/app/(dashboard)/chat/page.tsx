@@ -64,8 +64,8 @@ function ChatPageContent() {
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
       <section className="grid w-full gap-4 lg:grid-cols-[320px_1fr]">
-        <aside className="rounded-3xl border border-black/10 bg-white p-4">
-          <h1 className="text-xl font-bold text-[#0d0c15]">Conversaciones</h1>
+        <aside className="rounded-3xl border border-[#5d7932]/18 bg-white p-4">
+          <h1 className="text-xl font-bold text-[#0c1117]">Conversaciones</h1>
           <ul className="mt-4 flex gap-2 overflow-x-auto pb-1 lg:block lg:space-y-2 lg:overflow-visible lg:pb-0">
             {conversations.map((chat) => (
               <li
@@ -73,38 +73,38 @@ function ChatPageContent() {
                 onClick={() => setActiveConversation(chat.id)}
                 className={`min-w-[210px] cursor-pointer rounded-2xl border px-3 py-2.5 lg:min-w-0 ${
                   activeContactName === chat.name
-                    ? "border-[#0d0c15]/25 bg-[#f4f4f4]"
-                    : "border-black/10 hover:bg-[#f4f4f4]"
+                    ? "border-[#0c1117]/25 bg-[#edf4ea]"
+                    : "border-[#5d7932]/18 hover:bg-[#edf4ea]"
                 }`}
               >
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-semibold text-[#0d0c15]">{chat.name}</p>
+                  <p className="text-sm font-semibold text-[#0c1117]">{chat.name}</p>
                   {chat.unread > 0 ? (
-                    <span className="rounded-full bg-[#fed97b] px-2 py-0.5 text-xs font-bold text-[#0d0c15]">
+                    <span className="rounded-full bg-[#d8ff85] px-2 py-0.5 text-xs font-bold text-[#0c1117]">
                       {chat.unread}
                     </span>
                   ) : null}
                 </div>
-                <p className="mt-0.5 truncate text-xs text-[#0d0c15]/70">{chat.last}</p>
+                <p className="mt-0.5 truncate text-xs text-[#0c1117]/70">{chat.last}</p>
               </li>
             ))}
           </ul>
         </aside>
 
-        <article className="flex min-h-[430px] flex-col rounded-3xl border border-black/10 bg-white sm:min-h-[520px]">
-          <div className="border-b border-black/10 px-5 py-4">
+        <article className="flex min-h-[430px] flex-col rounded-3xl border border-[#5d7932]/18 bg-white sm:min-h-[520px]">
+          <div className="border-b border-[#5d7932]/18 px-5 py-4">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-sm font-semibold text-[#0d0c15]">
+                <p className="text-sm font-semibold text-[#0c1117]">
                   {activeContactName ?? searchParams.get("contactName") ?? "Selecciona una conversación"}
                 </p>
-                <p className="text-xs text-[#0d0c15]/65">Negociacion activa</p>
+                <p className="text-xs text-[#0c1117]/65">Negociacion activa</p>
               </div>
               <span
                 className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
                   connected
-                    ? "bg-green-100 text-green-700"
-                    : "bg-amber-100 text-amber-700"
+                    ? "bg-[#42d87f]/22 text-[#5d7932]"
+                    : "bg-[#d8ff85]/35 text-[#5d7932]"
                 }`}
               >
                 {connected ? "Socket conectado" : "Conectando..."}
@@ -126,14 +126,14 @@ function ChatPageContent() {
                       alt={`Avatar de ${msg.senderName}`}
                       width={30}
                       height={30}
-                      className="h-7 w-7 rounded-full border border-black/10 object-cover"
+                      className="h-7 w-7 rounded-full border border-[#5d7932]/18 object-cover"
                     />
                   ) : null}
                   <p
                     className={`max-w-[90%] rounded-2xl px-3 py-2 text-sm sm:max-w-[72%] ${
                       isCompany
-                        ? "bg-[#f4f4f4] text-[#0d0c15]"
-                        : "bg-[#c1b8ff] text-[#0d0c15]"
+                        ? "bg-[#edf4ea] text-[#0c1117]"
+                        : "bg-[#c0e2ff] text-[#0c1117]"
                     }`}
                   >
                     <span className="block text-[11px] font-semibold opacity-80">{msg.senderName}</span>
@@ -146,7 +146,7 @@ function ChatPageContent() {
                       alt={`Avatar de ${msg.senderName}`}
                       width={30}
                       height={30}
-                      className="h-7 w-7 rounded-full border border-black/10 object-cover"
+                      className="h-7 w-7 rounded-full border border-[#5d7932]/18 object-cover"
                     />
                   ) : null}
                 </div>
@@ -154,18 +154,18 @@ function ChatPageContent() {
             })}
           </div>
 
-          <form onSubmit={handleSendMessage} className="flex flex-col gap-2 border-t border-black/10 p-4 sm:flex-row">
+          <form onSubmit={handleSendMessage} className="flex flex-col gap-2 border-t border-[#5d7932]/18 p-4 sm:flex-row">
             <input
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Escribe tu mensaje..."
               disabled={sending}
-              className="flex-1 rounded-xl border border-black/15 px-3 py-2.5 text-sm outline-none ring-[#c1b8ff] focus:ring-2 disabled:opacity-50"
+              className="flex-1 rounded-xl border border-[#5d7932]/24 px-3 py-2.5 text-sm outline-none ring-[#c0e2ff] focus:ring-2 disabled:opacity-50"
             />
             <button
               type="submit"
               disabled={!message.trim() || sending}
-              className="rounded-xl bg-[#0d0c15] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#1f1c30] disabled:opacity-50 sm:w-auto"
+              className="rounded-xl bg-[#0c1117] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#244124] disabled:opacity-50 sm:w-auto"
             >
               {sending ? "Enviando..." : "Enviar"}
             </button>

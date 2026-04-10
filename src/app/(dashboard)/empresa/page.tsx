@@ -45,26 +45,26 @@ function CompanyDashboardContent() {
 
   return (
     <main className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-6">
-      <section className="rounded-3xl border border-black/10 bg-white p-6 sm:p-8">
+      <section className="rounded-3xl border border-[#5d7932]/18 bg-white p-6 sm:p-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#0d0c15]/55">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#0c1117]/55">
               Panel Empresa
             </p>
-            <h1 className="mt-2 text-3xl font-black text-[#0d0c15] sm:text-4xl">
+            <h1 className="mt-2 text-3xl font-black text-[#0c1117] sm:text-4xl">
               Busca talento y activa campanas
             </h1>
           </div>
           <div className="flex flex-wrap gap-2">
             <Link
               href="/empresa/perfil"
-              className="rounded-full border border-black/15 px-4 py-2 text-sm font-semibold text-[#0d0c15]"
+              className="rounded-full border border-[#5d7932]/24 px-4 py-2 text-sm font-semibold text-[#0c1117]"
             >
               Ver perfil
             </Link>
             <Link
               href="/explorar"
-              className="rounded-full bg-[#0d0c15] px-4 py-2 text-sm font-semibold text-white"
+              className="rounded-full bg-[#0c1117] px-4 py-2 text-sm font-semibold text-white"
             >
               Buscar influencers
             </Link>
@@ -84,25 +84,25 @@ function CompanyDashboardContent() {
       </section>
 
       <section className="mt-6 grid gap-6 lg:grid-cols-2">
-        <article className="rounded-3xl border border-black/10 bg-white p-6">
-          <h2 className="text-xl font-bold text-[#0d0c15]">Top sugeridos</h2>
+        <article className="rounded-3xl border border-[#5d7932]/18 bg-white p-6">
+          <h2 className="text-xl font-bold text-[#0c1117]">Top sugeridos</h2>
           <ul className="mt-4 space-y-3">
             {influencers.map((item) => (
               <li
                 key={item.id}
-                className="flex items-center justify-between rounded-2xl bg-[#f4f4f4] px-3 py-2.5"
+                className="flex items-center justify-between rounded-2xl bg-[#edf4ea] px-3 py-2.5"
               >
                 <div>
-                  <p className="text-sm font-semibold text-[#0d0c15]">{item.name}</p>
-                  <p className="text-xs text-[#0d0c15]/70">
+                  <p className="text-sm font-semibold text-[#0c1117]">{item.name}</p>
+                  <p className="text-xs text-[#0c1117]/70">
                     Engagement: {item.engagement} | Nicho: {item.category}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-bold text-[#0d0c15]">{item.price}</p>
+                  <p className="text-sm font-bold text-[#0c1117]">{item.price}</p>
                   <Link
                     href={`/chat?contactId=${encodeURIComponent(item.id)}&contactName=${encodeURIComponent(item.name)}`}
-                    className="text-xs font-semibold text-[#0d0c15] underline"
+                    className="text-xs font-semibold text-[#0c1117] underline"
                   >
                     Contactar
                   </Link>
@@ -112,21 +112,21 @@ function CompanyDashboardContent() {
           </ul>
         </article>
 
-        <article className="rounded-3xl border border-black/10 bg-white p-6">
-          <h2 className="text-xl font-bold text-[#0d0c15]">Nuevo brief de campana</h2>
+        <article className="rounded-3xl border border-[#5d7932]/18 bg-white p-6">
+          <h2 className="text-xl font-bold text-[#0c1117]">Nuevo brief de campana</h2>
           <form className="mt-4 space-y-3">
             <input
               defaultValue="Objetivo de campaña"
-              className="w-full rounded-xl border border-black/15 px-3 py-2.5 text-sm outline-none ring-[#c1b8ff] focus:ring-2"
+              className="w-full rounded-xl border border-[#5d7932]/24 px-3 py-2.5 text-sm outline-none ring-[#c0e2ff] focus:ring-2"
             />
             <textarea
               rows={4}
               defaultValue={campaignText}
-              className="w-full rounded-xl border border-black/15 px-3 py-2.5 text-sm outline-none ring-[#c1b8ff] focus:ring-2"
+              className="w-full rounded-xl border border-[#5d7932]/24 px-3 py-2.5 text-sm outline-none ring-[#c0e2ff] focus:ring-2"
             />
             <button
               type="button"
-              className="rounded-xl bg-[#0d0c15] px-4 py-2.5 text-sm font-semibold text-white"
+              className="rounded-xl bg-[#0c1117] px-4 py-2.5 text-sm font-semibold text-white"
             >
               Guardar y enviar por chat
             </button>

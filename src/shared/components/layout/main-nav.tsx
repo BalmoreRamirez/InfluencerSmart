@@ -74,12 +74,12 @@ export function MainNav() {
   const navItems = session?.role === "empresa" ? [...publicNavItems, ...companyNavItems] : publicNavItems;
 
   return (
-    <header className="sticky top-0 z-40 border-b border-black/10 bg-white backdrop-blur-lg">
+    <header className="sticky top-0 z-40 border-b border-[#5d7932]/18 bg-white backdrop-blur-lg">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-4">
         {/* Logo */}
         <Link href="/" className="inline-flex items-center gap-2">
-          <span className="h-2.5 w-2.5 rounded-full bg-[#0d0c15]" />
-          <span className="text-base font-black tracking-tight text-[#0d0c15]">
+          <span className="h-2.5 w-2.5 rounded-full bg-[#0c1117]" />
+          <span className="text-base font-black tracking-tight text-[#0c1117]">
             InfluencerSmart
           </span>
         </Link>
@@ -91,19 +91,19 @@ export function MainNav() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="px-4 py-2 text-sm font-medium text-[#0d0c15]/80 transition hover:text-[#0d0c15]"
+                className="px-4 py-2 text-sm font-medium text-[#0c1117]/80 transition hover:text-[#0c1117]"
               >
                 {item.label}
               </Link>
             ))}
             <Link
               href="/chat"
-              className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-[#0d0c15]/80 transition hover:bg-[#f4f4f4] hover:text-[#0d0c15]"
+              className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-[#0c1117]/80 transition hover:bg-[#edf4ea] hover:text-[#0c1117]"
             >
               <MessageIcon />
               Mensajes
               {unreadMessages > 0 ? (
-                <span className="rounded-full bg-[#fed97b] px-2 py-0.5 text-xs font-bold text-[#0d0c15]">
+                <span className="rounded-full bg-[#d8ff85] px-2 py-0.5 text-xs font-bold text-[#0c1117]">
                   {unreadLabel}
                 </span>
               ) : null}
@@ -113,19 +113,19 @@ export function MainNav() {
           <div className="flex items-center gap-3">
             {session ? (
               <>
-                <span className="inline-flex items-center gap-2 rounded-full bg-[#c1b8ff]/30 px-3 py-1.5 text-sm font-medium text-[#0d0c15]">
+                <span className="inline-flex items-center gap-2 rounded-full bg-[#c0e2ff]/30 px-3 py-1.5 text-sm font-medium text-[#0c1117]">
                   <Image
                     src={sessionAvatarUrl}
                     alt={`Perfil de ${sessionRoleLabel}`}
                     width={28}
                     height={28}
-                    className="h-7 w-7 rounded-full border border-black/10 object-cover"
+                    className="h-7 w-7 rounded-full border border-[#5d7932]/18 object-cover"
                   />
                   {sessionRoleLabel}
                 </span>
                 <button
                   onClick={handleLogout}
-                  className="rounded-full border border-black/15 px-5 py-2 text-sm font-semibold text-[#0d0c15] transition hover:bg-[#f4f4f4]"
+                  className="rounded-full border border-[#5d7932]/24 px-5 py-2 text-sm font-semibold text-[#0c1117] transition hover:bg-[#edf4ea]"
                 >
                   Cerrar sesión
                 </button>
@@ -134,13 +134,13 @@ export function MainNav() {
               <>
                 <Link
                   href="/login"
-                  className="rounded-full border border-black/15 px-5 py-2 text-sm font-semibold text-[#0d0c15] transition hover:bg-[#f4f4f4]"
+                  className="rounded-full border border-[#5d7932]/24 px-5 py-2 text-sm font-semibold text-[#0c1117] transition hover:bg-[#edf4ea]"
                 >
                   Iniciar sesión
                 </Link>
                 <Link
                   href="/registro"
-                  className="rounded-full bg-[#0d0c15] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#1f1c30]"
+                  className="rounded-full bg-[#0c1117] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#244124]"
                 >
                   Empezar
                 </Link>
@@ -151,51 +151,51 @@ export function MainNav() {
 
         {/* Mobile Menu */}
         <details className="group relative lg:hidden">
-          <summary className="list-none rounded-full border border-black/15 px-4 py-2 text-sm font-semibold text-[#0d0c15] cursor-pointer">
+          <summary className="list-none rounded-full border border-[#5d7932]/24 px-4 py-2 text-sm font-semibold text-[#0c1117] cursor-pointer">
             Menú
           </summary>
-          <div className="absolute right-0 mt-2 w-64 rounded-2xl border border-black/10 bg-white p-2 shadow-[0_12px_35px_rgba(13,12,21,0.16)]">
+          <div className="absolute right-0 mt-2 w-64 rounded-2xl border border-[#5d7932]/18 bg-white p-2 shadow-[0_12px_35px_rgba(13,12,21,0.16)]">
             <nav className="grid gap-1">
               {navItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="rounded-xl px-4 py-2.5 text-sm font-medium text-[#0d0c15]/80 transition hover:bg-[#f4f4f4]"
+                  className="rounded-xl px-4 py-2.5 text-sm font-medium text-[#0c1117]/80 transition hover:bg-[#edf4ea]"
                 >
                   {item.label}
                 </Link>
               ))}
               <Link
                 href="/chat"
-                className="inline-flex items-center justify-between rounded-xl px-4 py-2.5 text-sm font-medium text-[#0d0c15]/80 transition hover:bg-[#f4f4f4]"
+                className="inline-flex items-center justify-between rounded-xl px-4 py-2.5 text-sm font-medium text-[#0c1117]/80 transition hover:bg-[#edf4ea]"
               >
                 <span className="inline-flex items-center gap-2">
                   <MessageIcon />
                   Mensajes
                 </span>
                 {unreadMessages > 0 ? (
-                  <span className="rounded-full bg-[#fed97b] px-2 py-0.5 text-xs font-bold text-[#0d0c15]">
+                  <span className="rounded-full bg-[#d8ff85] px-2 py-0.5 text-xs font-bold text-[#0c1117]">
                     {unreadLabel}
                   </span>
                 ) : null}
               </Link>
             </nav>
-            <div className="mt-2 grid gap-1 border-t border-black/10 pt-2">
+            <div className="mt-2 grid gap-1 border-t border-[#5d7932]/18 pt-2">
               {session ? (
                 <>
-                  <div className="flex items-center justify-center gap-2 rounded-xl bg-[#c1b8ff]/20 px-4 py-2.5 text-center text-sm font-medium text-[#0d0c15]">
+                  <div className="flex items-center justify-center gap-2 rounded-xl bg-[#c0e2ff]/20 px-4 py-2.5 text-center text-sm font-medium text-[#0c1117]">
                     <Image
                       src={sessionAvatarUrl}
                       alt={`Perfil de ${sessionRoleLabel}`}
                       width={28}
                       height={28}
-                      className="h-7 w-7 rounded-full border border-black/10 object-cover"
+                      className="h-7 w-7 rounded-full border border-[#5d7932]/18 object-cover"
                     />
                     {sessionRoleLabel}
                   </div>
                   <button
                     onClick={handleLogout}
-                    className="rounded-xl px-4 py-2.5 text-sm font-semibold text-[#0d0c15] transition hover:bg-[#f4f4f4]"
+                    className="rounded-xl px-4 py-2.5 text-sm font-semibold text-[#0c1117] transition hover:bg-[#edf4ea]"
                   >
                     Cerrar sesión
                   </button>
@@ -204,13 +204,13 @@ export function MainNav() {
                 <>
                   <Link
                     href="/login"
-                    className="rounded-xl px-4 py-2.5 text-sm font-semibold text-[#0d0c15] transition hover:bg-[#f4f4f4]"
+                    className="rounded-xl px-4 py-2.5 text-sm font-semibold text-[#0c1117] transition hover:bg-[#edf4ea]"
                   >
                     Iniciar sesión
                   </Link>
                   <Link
                     href="/registro"
-                    className="rounded-xl bg-[#0d0c15] px-4 py-2.5 text-center text-sm font-semibold text-white"
+                    className="rounded-xl bg-[#0c1117] px-4 py-2.5 text-center text-sm font-semibold text-white"
                   >
                     Empezar
                   </Link>

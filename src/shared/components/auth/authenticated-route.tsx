@@ -36,8 +36,8 @@ export function AuthenticatedRoute({ children }: AuthenticatedRouteProps) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-[#c1b8ff] border-t-transparent" />
-          <p className="mt-4 text-sm text-[#0d0c15]/60">Verificando acceso...</p>
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-[#c0e2ff] border-t-transparent" />
+          <p className="mt-4 text-sm text-[#0c1117]/60">Verificando acceso...</p>
         </div>
       </div>
     );

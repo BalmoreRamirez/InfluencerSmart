@@ -130,25 +130,25 @@ function InfluencerProfileContent() {
     <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-10">
       <form
         onSubmit={handleSubmit}
-        className="rounded-3xl border border-black/10 bg-white p-5 sm:p-8 lg:p-9"
+        className="rounded-3xl border border-[#5d7932]/18 bg-white p-5 sm:p-8 lg:p-9"
       >
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#0d0c15]/55">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#0c1117]/55">
               Onboarding Influencer
             </p>
-            <h1 className="mt-2 text-2xl font-black text-[#0d0c15] sm:text-3xl">
+            <h1 className="mt-2 text-2xl font-black text-[#0c1117] sm:text-3xl">
               {form.fullName || "Completa tu perfil"}
             </h1>
-            <p className="mt-1 text-sm text-[#0d0c15]/70">{form.location || "Agrega tu ubicacion"}</p>
+            <p className="mt-1 text-sm text-[#0c1117]/70">{form.location || "Agrega tu ubicacion"}</p>
           </div>
-          <span className="rounded-full bg-[#c1b8ff] px-3 py-1 text-xs font-semibold text-[#0d0c15]">
+          <span className="rounded-full bg-[#c0e2ff] px-3 py-1 text-xs font-semibold text-[#0c1117]">
             Paso 2: Completar perfil
           </span>
         </div>
 
         {saved ? (
-          <p className="mt-4 rounded-xl border border-[#c1b8ff] bg-[#c1b8ff]/30 px-3 py-2 text-sm font-medium text-[#0d0c15]">
+          <p className="mt-4 rounded-xl border border-[#c0e2ff] bg-[#c0e2ff]/30 px-3 py-2 text-sm font-medium text-[#0c1117]">
             Perfil actualizado. Ya puedes usar la plataforma.
           </p>
         ) : null}
@@ -243,7 +243,7 @@ function InfluencerProfileContent() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-[#0d0c15] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#1f1c30] disabled:opacity-50 sm:w-auto"
+            className="w-full rounded-xl bg-[#0c1117] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#244124] disabled:opacity-50 sm:w-auto"
           >
             {loading ? "Guardando..." : "Completar onboarding"}
           </button>
@@ -264,7 +264,7 @@ type FieldProps = {
 
 function Field({ label, value, onChange, error, type = "text", placeholder }: FieldProps) {
   return (
-    <label className="text-sm font-semibold text-[#0d0c15]">
+    <label className="text-sm font-semibold text-[#0c1117]">
       {label}
       <input
         type={type}
@@ -272,7 +272,7 @@ function Field({ label, value, onChange, error, type = "text", placeholder }: Fi
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
         className={`mt-1 w-full rounded-xl border px-3 py-2.5 text-sm outline-none focus:ring-2 ${
-          error ? "border-red-400 ring-red-200" : "border-black/15 ring-[#c1b8ff]"
+          error ? "border-red-400 ring-red-200" : "border-[#5d7932]/24 ring-[#c0e2ff]"
         }`}
       />
       {error ? <span className="mt-1 text-xs text-red-600">{error}</span> : null}

@@ -50,7 +50,7 @@ export function MobileBottomNav() {
   }
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-black/10 bg-white/95 px-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] pt-2 backdrop-blur md:hidden">
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-[#5d7932]/18 bg-white/95 px-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] pt-2 backdrop-blur md:hidden">
       <ul className="grid grid-cols-4 gap-1">
         {mobileItems.map((item) => (
           <li key={item.href}>
@@ -63,8 +63,8 @@ export function MobileBottomNav() {
               aria-current={active ? "page" : undefined}
               className={`flex min-h-11 items-center justify-center rounded-xl px-2 text-center text-xs font-semibold transition ${
                 active
-                  ? "bg-[#0d0c15] text-white"
-                  : "text-[#0d0c15]/85 hover:bg-[#f4f4f4]"
+                  ? "bg-[#0c1117] text-white"
+                  : "text-[#0c1117]/85 hover:bg-[#edf4ea]"
               }`}
             >
               {isChatItem ? (
@@ -74,7 +74,7 @@ export function MobileBottomNav() {
                   {unreadMessages > 0 ? (
                     <span
                       className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
-                        active ? "bg-white/25 text-white" : "bg-[#fed97b] text-[#0d0c15]"
+                        active ? "bg-white/25 text-white" : "bg-[#d8ff85] text-[#0c1117]"
                       }`}
                     >
                       {unreadLabel}

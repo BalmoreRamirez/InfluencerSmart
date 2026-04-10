@@ -50,8 +50,8 @@ export default function LoginPage() {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-[#c1b8ff] border-t-transparent" />
-          <p className="mt-4 text-sm text-[#0d0c15]/60">Cargando...</p>
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-[#c0e2ff] border-t-transparent" />
+          <p className="mt-4 text-sm text-[#0c1117]/60">Cargando...</p>
         </div>
       </div>
     );
@@ -59,17 +59,17 @@ export default function LoginPage() {
 
   return (
     <main className="mx-auto w-full max-w-md px-5 py-10 sm:px-6">
-      <section className="rounded-3xl border border-black/10 bg-white p-7 shadow-[0_12px_35px_rgba(13,12,21,0.1)]">
-        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#0d0c15]/55">
+      <section className="rounded-3xl border border-[#5d7932]/18 bg-white p-7 shadow-[0_12px_35px_rgba(13,12,21,0.1)]">
+        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#0c1117]/55">
           Acceso
         </p>
-        <h1 className="mt-3 text-3xl font-black text-[#0d0c15]">Iniciar sesión</h1>
-        <p className="mt-2 text-sm text-[#0d0c15]/70">
+        <h1 className="mt-3 text-3xl font-black text-[#0c1117]">Iniciar sesión</h1>
+        <p className="mt-2 text-sm text-[#0c1117]/70">
           Accede como influencer o representante de empresa.
         </p>
 
         <form onSubmit={handleLogin} className="mt-6 space-y-4">
-          <label className="block text-sm font-medium text-[#0d0c15]">
+          <label className="block text-sm font-medium text-[#0c1117]">
             Correo
             <input
               type="email"
@@ -77,10 +77,10 @@ export default function LoginPage() {
               onChange={(event) => setEmail(event.target.value)}
               placeholder="correo@empresa.com"
               required
-              className="mt-1 w-full rounded-xl border border-black/15 bg-white px-3 py-2.5 outline-none ring-[#c1b8ff] focus:ring-2"
+              className="mt-1 w-full rounded-xl border border-[#5d7932]/24 bg-white px-3 py-2.5 outline-none ring-[#c0e2ff] focus:ring-2"
             />
           </label>
-          <label className="block text-sm font-medium text-[#0d0c15]">
+          <label className="block text-sm font-medium text-[#0c1117]">
             Contraseña
             <input
               type="password"
@@ -88,37 +88,37 @@ export default function LoginPage() {
               onChange={(event) => setPassword(event.target.value)}
               placeholder="********"
               required
-              className="mt-1 w-full rounded-xl border border-black/15 bg-white px-3 py-2.5 outline-none ring-[#c1b8ff] focus:ring-2"
+              className="mt-1 w-full rounded-xl border border-[#5d7932]/24 bg-white px-3 py-2.5 outline-none ring-[#c0e2ff] focus:ring-2"
             />
           </label>
           {error ? (
-            <p className="rounded-xl border border-[#fed97b] bg-[#fed97b]/30 px-3 py-2 text-sm text-[#0d0c15]">
+            <p className="rounded-xl border border-[#d8ff85] bg-[#d8ff85]/30 px-3 py-2 text-sm text-[#0c1117]">
               {error}
             </p>
           ) : null}
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-[#0d0c15] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1f1c30] disabled:opacity-50"
+            className="w-full rounded-xl bg-[#0c1117] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#244124] disabled:opacity-50"
           >
             {loading ? "Validando..." : "Entrar"}
           </button>
         </form>
 
-        <p className="mt-5 text-sm text-[#0d0c15]/70">
+        <p className="mt-5 text-sm text-[#0c1117]/70">
           ¿No tienes cuenta?{" "}
-          <Link href="/registro" className="font-semibold text-[#0d0c15] underline">
+          <Link href="/registro" className="font-semibold text-[#0c1117] underline">
             Regístrate aquí
           </Link>
         </p>
       </section>
 
       {/* Estado de configuracion */}
-      <div className="mt-6 rounded-2xl border border-black/10 bg-[#f4f4f4] p-5">
-        <p className="text-xs font-semibold uppercase tracking-wide text-[#0d0c15]/60">
+      <div className="mt-6 rounded-2xl border border-[#5d7932]/18 bg-[#edf4ea] p-5">
+        <p className="text-xs font-semibold uppercase tracking-wide text-[#0c1117]/60">
           Configuracion de autenticacion
         </p>
-        <div className="mt-3 space-y-2 text-sm text-[#0d0c15]/80">
+        <div className="mt-3 space-y-2 text-sm text-[#0c1117]/80">
           <p>Este login usa Firebase Authentication.</p>
           {authError ? <p className="text-xs text-red-700">{authError}</p> : null}
         </div>
