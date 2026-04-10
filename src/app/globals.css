@@ -50,3 +50,29 @@ button,
 a {
   font-weight: 600;
 }
+
+.btn-primary {
+  background: var(--color-black);
+  color: #ffffff;
+  border: 1px solid color-mix(in srgb, var(--color-spa-green) 24%, transparent);
+  font-weight: 700;
+}
+
+.btn-primary:hover {
+  background: var(--color-spa-green);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+}
+
+.btn-secondary {
+  background: #ffffff;
+  color: var(--color-black);
+  border: 1px solid color-mix(in srgb, var(--color-spa-green) 24%, transparent);
+  font-weight: 700;
+}
+
+.btn-secondary:hover {
+  background: var(--color-muted);
+}

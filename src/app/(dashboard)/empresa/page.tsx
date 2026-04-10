@@ -58,13 +58,13 @@ function CompanyDashboardContent() {
           <div className="flex flex-wrap gap-2">
             <Link
               href="/empresa/perfil"
-              className="rounded-full border border-[#5d7932]/24 px-4 py-2 text-sm font-semibold text-[#0c1117]"
+              className="rounded-full btn-secondary px-4 py-2 text-sm font-semibold text-[#0c1117]"
             >
               Ver perfil
             </Link>
             <Link
               href="/explorar"
-              className="rounded-full bg-[#0c1117] px-4 py-2 text-sm font-semibold text-white"
+              className="rounded-full btn-primary px-4 py-2 text-sm font-semibold text-white"
             >
               Buscar influencers
             </Link>
@@ -126,7 +126,7 @@ function CompanyDashboardContent() {
             />
             <button
               type="button"
-              className="rounded-xl bg-[#0c1117] px-4 py-2.5 text-sm font-semibold text-white"
+              className="rounded-xl btn-primary px-4 py-2.5 text-sm font-semibold text-white"
             >
               Guardar y enviar por chat
             </button>

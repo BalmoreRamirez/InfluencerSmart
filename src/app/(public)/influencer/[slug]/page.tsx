@@ -238,13 +238,13 @@ export default function InfluencerPublicProfilePage() {
         <div className="mt-8 flex gap-3">
           <Link
             href={`/chat?contactId=${encodeURIComponent(profile.id)}&contactName=${encodeURIComponent(profile.fullName)}`}
-            className="rounded-xl bg-[#0c1117] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#244124]"
+            className="rounded-xl btn-primary px-5 py-2.5 text-sm font-semibold text-white"
           >
             Enviar mensaje
           </Link>
           <Link
             href="/explorar"
-            className="rounded-xl border border-[#5d7932]/24 px-5 py-2.5 text-sm font-semibold text-[#0c1117] hover:bg-[#edf4ea]"
+            className="rounded-xl btn-secondary px-5 py-2.5 text-sm font-semibold text-[#0c1117]"
           >
             Volver a búsqueda
           </Link>

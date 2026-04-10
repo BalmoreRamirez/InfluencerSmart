@@ -243,7 +243,7 @@ function InfluencerProfileContent() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-[#0c1117] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#244124] disabled:opacity-50 sm:w-auto"
+            className="w-full rounded-xl btn-primary px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50 sm:w-auto"
           >
             {loading ? "Guardando..." : "Completar onboarding"}
           </button>

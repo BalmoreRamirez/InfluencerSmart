@@ -64,13 +64,13 @@ function InfluencerDashboardContent() {
           <div className="flex flex-wrap gap-2">
             <Link
               href="/influencer/perfil"
-              className="rounded-full border border-[#5d7932]/24 px-4 py-2 text-sm font-semibold text-[#0c1117] hover:bg-[#edf4ea]"
+              className="rounded-full btn-secondary px-4 py-2 text-sm font-semibold text-[#0c1117]"
             >
               Editar perfil
             </Link>
             <Link
               href="/chat"
-              className="rounded-full bg-[#0c1117] px-4 py-2 text-sm font-semibold text-white hover:bg-[#244124]"
+              className="rounded-full btn-primary px-4 py-2 text-sm font-semibold text-white"
             >
               Ver mensajes {totalUnread > 0 ? `(${totalUnread})` : ""}
             </Link>
@@ -104,7 +104,7 @@ function InfluencerDashboardContent() {
             liveConversations.map((conv) => (
               <article
                 key={conv.id}
-                className="rounded-2xl border border-[#5d7932]/18 p-4 hover:bg-[#edf4ea] transition"
+                className="rounded-2xl border border-[#5d7932]/18 p-4 transition"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div>

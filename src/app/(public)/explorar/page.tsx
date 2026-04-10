@@ -193,13 +193,13 @@ export default function ExplorePage() {
             <div className="mt-4 flex gap-2">
               <Link
                 href={`/influencer/${encodeURIComponent(toSlug(profile.name))}`}
-                className="flex-1 rounded-full border border-[#5d7932]/24 px-4 py-2 text-center text-sm font-semibold text-[#0c1117] hover:bg-[#edf4ea]"
+                className="flex-1 rounded-full btn-secondary px-4 py-2 text-center text-sm font-semibold text-[#0c1117]"
               >
                 Ver perfil
               </Link>
               <Link
                 href={`/chat?contactId=${encodeURIComponent(profile.id)}&contactName=${encodeURIComponent(profile.name)}`}
-                className="flex-1 rounded-full bg-[#0c1117] px-4 py-2 text-center text-sm font-semibold text-white hover:bg-[#244124]"
+                className="flex-1 rounded-full btn-primary px-4 py-2 text-center text-sm font-semibold text-white"
               >
                 Contactar
               </Link>

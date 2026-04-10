@@ -47,7 +47,7 @@ export default function Home() {
           <div className="pointer-events-none absolute -right-16 top-0 h-52 w-52 rounded-full bg-[#d8ff85]/50 blur-3xl" />
 
           <div className="relative">
-            <div className="inline-flex items-center gap-2 rounded-full bg-[#0c1117] px-4 py-2 text-xs font-semibold text-white">
+            <div className="inline-flex items-center gap-2 rounded-full btn-primary px-4 py-2 text-xs font-semibold text-white">
               <span className="h-2 w-2 animate-pulse rounded-full bg-green-400" />
               PLATAFORMA MVP
             </div>
@@ -67,7 +67,7 @@ export default function Home() {
             <div className="mt-8 flex flex-wrap gap-4">
               <Link
                 href="/registro"
-                className="rounded-full bg-[#0c1117] px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-[#244124] hover:shadow-xl sm:px-8 sm:text-base"
+                className="rounded-full btn-primary px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:shadow-xl sm:px-8 sm:text-base"
               >
                 Empezar gratis →
               </Link>
@@ -201,7 +201,7 @@ function FeatureCard({
 }) {
   return (
     <div className="relative rounded-2xl border border-[#5d7932]/18 bg-[#edf4ea] p-6">
-      <div className="absolute -left-3 -top-3 flex h-10 w-10 items-center justify-center rounded-full bg-[#0c1117] text-sm font-bold text-white">
+      <div className="absolute -left-3 -top-3 flex h-10 w-10 items-center justify-center rounded-full btn-primary text-sm font-bold text-white">
         {number}
       </div>
       <div className="text-4xl">{icon}</div>
@@ -241,7 +241,7 @@ function RoleCard({
       </ul>
       <Link
         href={ctaHref}
-        className="mt-6 inline-block w-full rounded-xl bg-[#0c1117] px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-[#244124]"
+        className="mt-6 inline-block w-full rounded-xl btn-primary px-5 py-3 text-center text-sm font-semibold text-white transition"
       >
         {ctaText}
       </Link>

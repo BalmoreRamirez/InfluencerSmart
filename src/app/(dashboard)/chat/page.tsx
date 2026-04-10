@@ -74,7 +74,7 @@ function ChatPageContent() {
                 className={`min-w-[210px] cursor-pointer rounded-2xl border px-3 py-2.5 lg:min-w-0 ${
                   activeContactName === chat.name
                     ? "border-[#0c1117]/25 bg-[#edf4ea]"
-                    : "border-[#5d7932]/18 hover:bg-[#edf4ea]"
+                    : "border-[#5d7932]/18"
                 }`}
               >
                 <div className="flex items-center justify-between gap-2">
@@ -165,7 +165,7 @@ function ChatPageContent() {
             <button
               type="submit"
               disabled={!message.trim() || sending}
-              className="rounded-xl bg-[#0c1117] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#244124] disabled:opacity-50 sm:w-auto"
+              className="rounded-xl btn-primary px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50 sm:w-auto"
             >
               {sending ? "Enviando..." : "Enviar"}
             </button>

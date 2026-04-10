@@ -98,7 +98,7 @@ export function MainNav() {
             ))}
             <Link
               href="/chat"
-              className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-[#0c1117]/80 transition hover:bg-[#edf4ea] hover:text-[#0c1117]"
+              className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-[#0c1117]/80 transition hover:text-[#0c1117]"
             >
               <MessageIcon />
               Mensajes
@@ -125,7 +125,7 @@ export function MainNav() {
                 </span>
                 <button
                   onClick={handleLogout}
-                  className="rounded-full border border-[#5d7932]/24 px-5 py-2 text-sm font-semibold text-[#0c1117] transition hover:bg-[#edf4ea]"
+                  className="rounded-full btn-secondary px-5 py-2 text-sm font-semibold text-[#0c1117] transition"
                 >
                   Cerrar sesión
                 </button>
@@ -134,13 +134,13 @@ export function MainNav() {
               <>
                 <Link
                   href="/login"
-                  className="rounded-full border border-[#5d7932]/24 px-5 py-2 text-sm font-semibold text-[#0c1117] transition hover:bg-[#edf4ea]"
+                  className="rounded-full btn-secondary px-5 py-2 text-sm font-semibold text-[#0c1117] transition"
                 >
                   Iniciar sesión
                 </Link>
                 <Link
                   href="/registro"
-                  className="rounded-full bg-[#0c1117] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#244124]"
+                  className="rounded-full btn-primary px-5 py-2 text-sm font-semibold text-white transition"
                 >
                   Empezar
                 </Link>
@@ -151,7 +151,7 @@ export function MainNav() {
 
         {/* Mobile Menu */}
         <details className="group relative lg:hidden">
-          <summary className="list-none rounded-full border border-[#5d7932]/24 px-4 py-2 text-sm font-semibold text-[#0c1117] cursor-pointer">
+          <summary className="list-none rounded-full btn-secondary px-4 py-2 text-sm font-semibold text-[#0c1117] cursor-pointer">
             Menú
           </summary>
           <div className="absolute right-0 mt-2 w-64 rounded-2xl border border-[#5d7932]/18 bg-white p-2 shadow-[0_12px_35px_rgba(13,12,21,0.16)]">
@@ -160,14 +160,14 @@ export function MainNav() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="rounded-xl px-4 py-2.5 text-sm font-medium text-[#0c1117]/80 transition hover:bg-[#edf4ea]"
+                  className="rounded-xl px-4 py-2.5 text-sm font-medium text-[#0c1117]/80 transition"
                 >
                   {item.label}
                 </Link>
               ))}
               <Link
                 href="/chat"
-                className="inline-flex items-center justify-between rounded-xl px-4 py-2.5 text-sm font-medium text-[#0c1117]/80 transition hover:bg-[#edf4ea]"
+                className="inline-flex items-center justify-between rounded-xl px-4 py-2.5 text-sm font-medium text-[#0c1117]/80 transition"
               >
                 <span className="inline-flex items-center gap-2">
                   <MessageIcon />
@@ -195,7 +195,7 @@ export function MainNav() {
                   </div>
                   <button
                     onClick={handleLogout}
-                    className="rounded-xl px-4 py-2.5 text-sm font-semibold text-[#0c1117] transition hover:bg-[#edf4ea]"
+                    className="rounded-xl px-4 py-2.5 text-sm font-semibold text-[#0c1117] transition"
                   >
                     Cerrar sesión
                   </button>
@@ -204,13 +204,13 @@ export function MainNav() {
                 <>
                   <Link
                     href="/login"
-                    className="rounded-xl px-4 py-2.5 text-sm font-semibold text-[#0c1117] transition hover:bg-[#edf4ea]"
+                    className="rounded-xl px-4 py-2.5 text-sm font-semibold text-[#0c1117] transition"
                   >
                     Iniciar sesión
                   </Link>
                   <Link
                     href="/registro"
-                    className="rounded-xl bg-[#0c1117] px-4 py-2.5 text-center text-sm font-semibold text-white"
+                    className="rounded-xl btn-primary px-4 py-2.5 text-center text-sm font-semibold text-white"
                   >
                     Empezar
                   </Link>

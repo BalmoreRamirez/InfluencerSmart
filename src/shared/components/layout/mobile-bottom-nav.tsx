@@ -64,7 +64,7 @@ export function MobileBottomNav() {
               className={`flex min-h-11 items-center justify-center rounded-xl px-2 text-center text-xs font-semibold transition ${
                 active
                   ? "bg-[#0c1117] text-white"
-                  : "text-[#0c1117]/85 hover:bg-[#edf4ea]"
+                  : "text-[#0c1117]/85"
               }`}
             >
               {isChatItem ? (
