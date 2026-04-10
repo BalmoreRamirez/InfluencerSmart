@@ -161,64 +161,96 @@ export function MainNav() {
 
         {/* Mobile Menu */}
         <details className="group relative justify-self-end lg:hidden">
-          <summary className="list-none rounded-full btn-secondary px-4 py-2 text-sm font-semibold text-[#0c1117] cursor-pointer">
+          <summary className="inline-flex cursor-pointer list-none items-center gap-2 rounded-full border border-[#5d7932]/22 bg-[#f5faf0] px-4 py-2 text-sm font-semibold text-[#0c1117]">
+            <i className="bx bx-menu text-base leading-none" aria-hidden="true" />
             Menú
           </summary>
-          <div className="absolute right-0 mt-2 w-64 rounded-2xl border border-[#5d7932]/18 bg-white p-2 shadow-[0_12px_35px_rgba(13,12,21,0.16)]">
-            <nav className="grid gap-1">
-              {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="rounded-xl px-4 py-2.5 text-sm font-medium text-[#0c1117]/80 transition"
-                >
-                  {item.label}
-                </Link>
-              ))}
-              <Link
-                href="/chat"
-                className="inline-flex items-center justify-between rounded-xl px-4 py-2.5 text-sm font-medium text-[#0c1117]/80 transition"
-              >
-                <span className="inline-flex items-center gap-2">
-                  <MessageIcon />
-                  Chat
+          <div className="fixed inset-0 z-50 bg-[#0c1117]/45 p-3">
+            <div className="ml-auto w-[min(22rem,calc(100vw-1.5rem))] rounded-[1.75rem] border border-white/10 bg-[#0c1117] p-3 text-white shadow-[0_18px_45px_rgba(5,7,10,0.45)]">
+              <div className="flex items-center justify-between border-b border-white/10 px-2 pb-3">
+                <span className="text-xs font-semibold uppercase tracking-[0.18em] text-white/65">Navegación</span>
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/15 text-white/80">
+                  <i className="bx bx-x text-lg leading-none" aria-hidden="true" />
                 </span>
-                {unreadMessages > 0 ? (
-                  <span className="rounded-full bg-[#d8ff85] px-2 py-0.5 text-xs font-bold text-[#0c1117]">
-                    {unreadLabel}
-                  </span>
-                ) : null}
-              </Link>
-            </nav>
-            <div className="mt-2 grid gap-1 border-t border-[#5d7932]/18 pt-2">
+              </div>
+
               {session ? (
-                <>
-                  <Link href={profileHref} className="rounded-xl px-4 py-2.5 text-sm font-semibold text-[#0c1117] transition">
-                    Ver perfil
-                  </Link>
-                  <button
-                    onClick={handleLogout}
-                    className="rounded-xl px-4 py-2.5 text-sm font-semibold text-[#0c1117] transition"
-                  >
-                    Cerrar sesión
-                  </button>
-                </>
-              ) : (
-                <>
+                <div className="mt-3 rounded-2xl border border-white/10 bg-white/5 px-3 py-3">
+                  <div className="flex items-center gap-3">
+                    <Image
+                      src={sessionAvatarUrl}
+                      alt={`Perfil de ${sessionRoleLabel}`}
+                      width={44}
+                      height={44}
+                      className="h-11 w-11 rounded-full border border-white/15 object-cover"
+                    />
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-white">{session.username}</p>
+                      <p className="truncate text-xs text-white/60">{session.email}</p>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+
+              <nav className="mt-3 grid gap-2">
+                {navItems.map((item) => (
                   <Link
-                    href="/login"
-                    className="rounded-xl px-4 py-2.5 text-sm font-semibold text-[#0c1117] transition"
+                    key={item.href}
+                    href={item.href}
+                    className="rounded-xl border border-white/10 px-4 py-3 text-sm font-medium text-white/90 transition hover:bg-white/10"
                   >
-                    Iniciar sesión
+                    {item.label}
                   </Link>
-                  <Link
-                    href="/registro"
-                    className="rounded-xl btn-primary px-4 py-2.5 text-center text-sm font-semibold text-white"
-                  >
-                    Empezar
-                  </Link>
-                </>
-              )}
+                ))}
+                <Link
+                  href="/chat"
+                  className="inline-flex items-center justify-between rounded-xl border border-white/10 px-4 py-3 text-sm font-medium text-white/90 transition hover:bg-white/10"
+                >
+                  <span className="inline-flex items-center gap-2">
+                    <MessageIcon />
+                    Chat
+                  </span>
+                  {unreadMessages > 0 ? (
+                    <span className="rounded-full bg-[#d8ff85] px-2 py-0.5 text-xs font-bold text-[#0c1117]">
+                      {unreadLabel}
+                    </span>
+                  ) : null}
+                </Link>
+              </nav>
+
+              <div className="mt-3 grid gap-2 border-t border-white/10 pt-3">
+                {session ? (
+                  <>
+                    <Link
+                      href={profileHref}
+                      className="rounded-xl border border-white/10 px-4 py-3 text-sm font-semibold text-white/90 transition hover:bg-white/10"
+                    >
+                      Ver perfil
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="rounded-xl border border-[#d8ff85]/35 bg-[#d8ff85]/90 px-4 py-3 text-sm font-semibold text-[#0c1117] transition hover:bg-[#d8ff85]"
+                    >
+                      Cerrar sesión
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      href="/login"
+                      className="rounded-xl border border-white/10 px-4 py-3 text-center text-sm font-semibold text-white/90 transition hover:bg-white/10"
+                    >
+                      Iniciar sesión
+                    </Link>
+                    <Link
+                      href="/registro"
+                      className="rounded-xl bg-[#d8ff85] px-4 py-3 text-center text-sm font-semibold text-[#0c1117]"
+                    >
+                      Empezar
+                    </Link>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </details>
