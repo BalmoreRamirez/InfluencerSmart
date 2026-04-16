@@ -2,6 +2,12 @@ import { cert, getApps, initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
 
+const REQUIRED_ADMIN_ENV = [
+  "FIREBASE_PROJECT_ID",
+  "FIREBASE_CLIENT_EMAIL",
+  "FIREBASE_PRIVATE_KEY",
+] as const;
+
 function ensureEnv(name: string) {
   const value = process.env[name]?.trim();
   if (!value) {
@@ -25,6 +31,14 @@ function getAdminApp() {
 }
 
 export const adminServerTimestamp = FieldValue.serverTimestamp;
+
+export function getMissingFirebaseAdminEnv() {
+  return REQUIRED_ADMIN_ENV.filter((name) => !process.env[name]?.trim());
+}
+
+export function isFirebaseAdminConfigured() {
+  return getMissingFirebaseAdminEnv().length === 0;
+}
 
 export function getAdminServices() {
   const adminApp = getAdminApp();
