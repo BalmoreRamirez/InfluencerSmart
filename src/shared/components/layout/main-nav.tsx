@@ -98,18 +98,20 @@ export function MainNav() {
         </nav>
 
         <div className="hidden items-center gap-3 justify-self-end lg:flex">
-          <Link
-            href="/chat"
-            className="relative inline-flex h-10 w-10 items-center justify-center rounded-full text-[#0c1117]/80 transition hover:bg-[#c0e2ff]/20 hover:text-[#0c1117]"
-            aria-label="Mensajes"
-          >
-            <MessageIcon />
-            {unreadMessages > 0 ? (
-              <span className="absolute -right-0.5 -top-0.5 min-w-5 rounded-full bg-[#d8ff85] px-1.5 py-0.5 text-center text-[10px] font-bold leading-none text-[#0c1117]">
-                {unreadLabel}
-              </span>
-            ) : null}
-          </Link>
+          {session ? (
+            <Link
+              href="/chat"
+              className="relative inline-flex h-10 w-10 items-center justify-center rounded-full text-[#0c1117]/80 transition hover:bg-[#c0e2ff]/20 hover:text-[#0c1117]"
+              aria-label="Mensajes"
+            >
+              <MessageIcon />
+              {unreadMessages > 0 ? (
+                <span className="absolute -right-0.5 -top-0.5 min-w-5 rounded-full bg-[#d8ff85] px-1.5 py-0.5 text-center text-[10px] font-bold leading-none text-[#0c1117]">
+                  {unreadLabel}
+                </span>
+              ) : null}
+            </Link>
+          ) : null}
 
           {session ? (
             <div className="group relative">
@@ -226,21 +228,23 @@ export function MainNav() {
                   {item.label}
                 </Link>
               ))}
-              <Link
-                href="/chat"
-                onClick={() => setMobileMenuOpen(false)}
-                className="inline-flex items-center justify-between rounded-xl border border-white/10 px-4 py-3 text-sm font-medium text-white/90 transition hover:bg-white/10"
-              >
-                <span className="inline-flex items-center gap-2">
-                  <MessageIcon />
-                  Chat
-                </span>
-                {unreadMessages > 0 ? (
-                  <span className="rounded-full bg-[#d8ff85] px-2 py-0.5 text-xs font-bold text-[#0c1117]">
-                    {unreadLabel}
+              {session ? (
+                <Link
+                  href="/chat"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="inline-flex items-center justify-between rounded-xl border border-white/10 px-4 py-3 text-sm font-medium text-white/90 transition hover:bg-white/10"
+                >
+                  <span className="inline-flex items-center gap-2">
+                    <MessageIcon />
+                    Chat
                   </span>
-                ) : null}
-              </Link>
+                  {unreadMessages > 0 ? (
+                    <span className="rounded-full bg-[#d8ff85] px-2 py-0.5 text-xs font-bold text-[#0c1117]">
+                      {unreadLabel}
+                    </span>
+                  ) : null}
+                </Link>
+              ) : null}
             </nav>
 
             <div className="mt-3 grid gap-2 border-t border-white/10 pt-3">

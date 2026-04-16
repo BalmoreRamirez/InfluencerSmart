@@ -7,10 +7,10 @@ import { useAuthStore } from "@/shared/stores/auth-store";
 
 const defaultMobileItems = [
   { href: "/", label: "Inicio" },
-  { href: "/chat", label: "Chat" },
   { href: "/influencer/perfil", label: "Perfil" },
 ];
 const companyExtraMobileItems = [{ href: "/explorar", label: "Explorar" }];
+const chatMobileItem = { href: "/chat", label: "Chat" };
 
 function MessageIcon() {
   return (
@@ -34,8 +34,17 @@ export function MobileBottomNav() {
   const unreadLabel = unreadMessages > 99 ? "99+" : String(unreadMessages);
   const mobileItems =
     session?.role === "empresa"
-      ? [...defaultMobileItems.slice(0, 1), ...companyExtraMobileItems, ...defaultMobileItems.slice(1)]
-      : defaultMobileItems;
+      ? [
+          ...defaultMobileItems.slice(0, 1),
+          ...companyExtraMobileItems,
+          ...(session ? [chatMobileItem] : []),
+          ...defaultMobileItems.slice(1),
+        ]
+      : [
+          ...defaultMobileItems.slice(0, 1),
+          ...(session ? [chatMobileItem] : []),
+          ...defaultMobileItems.slice(1),
+        ];
 
   function isActive(href: string) {
     if (href === "/") {
@@ -51,7 +60,7 @@ export function MobileBottomNav() {
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-[#5d7932]/18 bg-white/95 px-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] pt-2 backdrop-blur md:hidden">
-      <ul className="grid grid-cols-4 gap-1">
+      <ul className="grid gap-1" style={{ gridTemplateColumns: `repeat(${mobileItems.length}, minmax(0, 1fr))` }}>
         {mobileItems.map((item) => (
           <li key={item.href}>
             {(() => {

@@ -1,15 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/shared/stores/auth-store";
+import { listPublicInfluencers } from "@/shared/services/firebase-influencers-service";
 
 export default function Home() {
   const router = useRouter();
   const session = useAuthStore((state) => state.session);
   const isHydrated = useAuthStore((state) => state.isHydrated);
   const hydrateSession = useAuthStore((state) => state.hydrateSession);
+  const [stats, setStats] = useState({
+    influencers: "-",
+    categories: "-",
+  });
 
   useEffect(() => {
     if (!isHydrated) {
@@ -26,6 +31,43 @@ export default function Home() {
       router.push(redirectTo);
     }
   }, [router, session, isHydrated]);
+
+  useEffect(() => {
+    if (!isHydrated || session) {
+      return;
+    }
+
+    let cancelled = false;
+
+    async function loadStats() {
+      const rows = await listPublicInfluencers();
+      const uniqueCategories = new Set(
+        rows
+          .map((item) => item.category.trim())
+          .filter((category) => category.length > 0)
+      );
+
+      if (!cancelled) {
+        setStats({
+          influencers: String(rows.length),
+          categories: String(uniqueCategories.size),
+        });
+      }
+    }
+
+    loadStats().catch(() => {
+      if (!cancelled) {
+        setStats({
+          influencers: "-",
+          categories: "-",
+        });
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isHydrated, session]);
 
   if (!isHydrated || session) {
     return (
@@ -83,8 +125,8 @@ export default function Home() {
 
         {/* Stats Section */}
         <section className="grid gap-4 sm:grid-cols-3">
-          <StatCard number="20+" label="Influencers activos" />
-          <StatCard number="15+" label="Categorías disponibles" />
+          <StatCard number={stats.influencers} label="Influencers públicos" />
+          <StatCard number={stats.categories} label="Categorías disponibles" />
           <StatCard number="100%" label="Gratis para empezar" />
         </section>
 
