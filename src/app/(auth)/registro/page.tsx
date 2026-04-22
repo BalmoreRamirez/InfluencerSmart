@@ -4,7 +4,7 @@ import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type AppRole } from "@/shared/lib/firebase-collections";
-import { useAuthStore } from "@/shared/stores/auth-store";
+import { useAuthStore } from "@/features/auth/stores/auth-store";
 
 export default function RegisterPage() {
   const router = useRouter();

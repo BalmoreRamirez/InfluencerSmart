@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { ReviewCard, type ReviewCardItem } from "@/shared/components/ui/review-card";
-import { getPublicInfluencerProfileBySlug } from "@/shared/services/firebase-public-profile-service";
+import { getPublicInfluencerProfileBySlug } from "@/features/public-profile/services/firebase-public-profile-service";
 
 type PublicProfileState = {
   fullName: string;

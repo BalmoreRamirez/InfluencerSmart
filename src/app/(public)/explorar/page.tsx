@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { listPublicInfluencers, type PublicInfluencerCard } from "@/shared/services/firebase-influencers-service";
-import { useAuthStore } from "@/shared/stores/auth-store";
+import { listPublicInfluencers, type PublicInfluencerCard } from "@/features/influencer/services/firebase-influencers-service";
+import { useAuthStore } from "@/features/auth/stores/auth-store";
 
 function toSlug(value: string) {
   return value

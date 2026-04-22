@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "chat:server": "node --env-file=.env fake-server/socket-server.mjs",
+    "chat:server": "node --env-file=.env tools/fake-server/socket-server.mjs",
     "firebase:login": "npx -y firebase-tools login",
     "firebase:rules:check": "npx -y firebase-tools --version",
     "firebase:rules:deploy": "npx -y firebase-tools deploy --only firestore:rules"

@@ -5,8 +5,8 @@ import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { AuthenticatedRoute } from "@/shared/components/auth/authenticated-route";
-import { useChatStore } from "@/shared/stores/chat-store";
-import { useAuthStore } from "@/shared/stores/auth-store";
+import { useChatStore } from "@/features/chat/stores/chat-store";
+import { useAuthStore } from "@/features/auth/stores/auth-store";
 
 function ChatPageContent() {
   const searchParams = useSearchParams();

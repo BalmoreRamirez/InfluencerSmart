@@ -105,6 +105,7 @@ npm run dev     # Servidor de desarrollo (http://localhost:3000)
 npm run build   # Build de producción
 npm run start   # Servidor de producción
 npm run lint    # Ejecutar ESLint
+npm run chat:server # Socket server fake para pruebas de chat
 ```
 
 ## Firebase
@@ -194,26 +195,25 @@ if (!app) {
 ## Estructura del Proyecto
 
 ```
-src/
-├── app/
-│   ├── (auth)/              # Páginas de autenticación
-│   │   ├── login/           # Inicio de sesión
-│   │   └── registro/        # Registro de usuarios
-│   ├── (dashboard)/         # Dashboards protegidos
-│   │   ├── influencer/      # Panel del influencer
-│   │   ├── empresa/         # Panel de la empresa
-│   │   └── chat/            # Sistema de mensajería
-│   └── (public)/            # Páginas públicas
-│       ├── explorar/        # Buscador de influencers
-│       └── influencer/      # Perfiles públicos
-├── shared/
-│   ├── components/          # Componentes reutilizables
-│   │   ├── layout/          # Navegación y estructura
-│   │   └── ui/              # Componentes UI (cards, etc)
-│   └── lib/                 # Utilidades y datos
-│       ├── mock-auth.ts     # Autenticación simulada
-│       └── mock-data.ts     # Base de datos simulada
-└── tests/                   # Tests (por implementar)
+.
+├── src/
+│   ├── app/
+│   │   ├── (auth)/          # Páginas de autenticación
+│   │   ├── (dashboard)/     # Dashboards protegidos
+│   │   ├── (public)/        # Páginas públicas
+│   │   └── api/             # Route handlers (chat/company)
+│   ├── features/
+│   │   ├── auth/            # Estado y servicios de autenticación
+│   │   ├── chat/            # Estado y servicios de chat
+│   │   ├── company/         # Servicios de empresa (briefs)
+│   │   ├── influencer/      # Servicios de discovery influencer
+│   │   ├── onboarding/      # Servicios de onboarding
+│   │   └── public-profile/  # Servicios de perfil público
+│   ├── shared/
+│   │   ├── components/      # Componentes reutilizables de UI/layout
+│   │   └── lib/             # Integraciones Firebase y utilidades
+│   └── tests/               # Tests (por implementar)
+└── tools/fake-server/       # Socket server local para desarrollo
 ```
 
 ## Características Implementadas

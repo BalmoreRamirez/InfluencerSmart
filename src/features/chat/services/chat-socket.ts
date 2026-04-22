@@ -17,6 +17,7 @@ type JoinRoomPayload = {
 };
 
 let socket: Socket | null = null;
+let socketDisabled = false;
 
 function getSocketServerUrl() {
   const configured = process.env.NEXT_PUBLIC_CHAT_SOCKET_URL?.trim();
@@ -30,6 +31,8 @@ function getSocketServerUrl() {
 }
 
 function ensureSocket() {
+  if (socketDisabled) return null;
+
   const serverUrl = getSocketServerUrl();
   if (!serverUrl) return null;
   if (socket) return socket;
@@ -37,6 +40,14 @@ function ensureSocket() {
   socket = io(serverUrl, {
     transports: ["websocket"],
     autoConnect: true,
+    reconnectionAttempts: 1,
+    timeout: 2000,
+  });
+
+  socket.on("connect_error", () => {
+    socketDisabled = true;
+    socket?.disconnect();
+    socket = null;
   });
 
   return socket;
@@ -125,4 +136,5 @@ export function disconnectChatSocket() {
   if (!socket) return;
   socket.disconnect();
   socket = null;
+  socketDisabled = false;
 }

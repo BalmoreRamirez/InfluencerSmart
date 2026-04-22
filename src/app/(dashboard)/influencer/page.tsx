@@ -4,9 +4,9 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { MetricCard } from "@/shared/components/ui/metric-card";
 import { ProtectedRoute } from "@/shared/components/auth/protected-route";
-import { getInfluencerOnboarding } from "@/shared/services/firebase-onboarding-service";
-import { useAuthStore } from "@/shared/stores/auth-store";
-import { useChatStore } from "@/shared/stores/chat-store";
+import { getInfluencerOnboarding } from "@/features/onboarding/services/firebase-onboarding-service";
+import { useAuthStore } from "@/features/auth/stores/auth-store";
+import { useChatStore } from "@/features/chat/stores/chat-store";
 
 function formatCompactNumber(value: number) {
   return new Intl.NumberFormat("es", {

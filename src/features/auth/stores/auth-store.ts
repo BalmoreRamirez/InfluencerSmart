@@ -7,7 +7,7 @@ import {
   subscribeToAuthSessionChange,
   type AuthSession,
   type RegisterInput,
-} from "@/shared/services/firebase-auth-service";
+} from "@/features/auth/services/firebase-auth-service";
 
 let authUnsubscribe: (() => void) | null = null;
 

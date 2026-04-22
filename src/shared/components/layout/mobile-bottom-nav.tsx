@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useChatStore } from "@/shared/stores/chat-store";
-import { useAuthStore } from "@/shared/stores/auth-store";
+import { useChatStore } from "@/features/chat/stores/chat-store";
+import { useAuthStore } from "@/features/auth/stores/auth-store";
 
 const defaultMobileItems = [
   { href: "/", label: "Inicio" },

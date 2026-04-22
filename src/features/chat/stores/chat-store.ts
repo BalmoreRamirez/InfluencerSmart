@@ -6,13 +6,13 @@ import {
   leaveChatRoom,
   onSocketStatusChange,
   sendChatMessage,
-} from "@/shared/services/chat-socket";
+} from "@/features/chat/services/chat-socket";
 import {
   fetchConversationsViaApi,
   fetchMessagesViaApi,
   markConversationReadViaApi,
   sendMessageViaApi,
-} from "@/shared/services/chat-api-service";
+} from "@/features/chat/services/chat-api-service";
 
 type ChatRole = "influencer" | "empresa";
 

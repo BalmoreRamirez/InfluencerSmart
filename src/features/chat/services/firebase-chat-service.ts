@@ -7,37 +7,6 @@ import {
 } from "firebase/firestore/lite";
 import { chatsCollectionRef, chatDocRef, chatMessagesCollectionRef } from "@/shared/lib/firebase-collections";
 
-type ChatRole = "influencer" | "empresa";
-
-type ConversationRecord = {
-  chatId: string;
-  contactId: string;
-  contactName: string;
-  last: string;
-  unread: number;
-};
-
-type ChatMessageRecord = {
-  id: string;
-  by: ChatRole;
-  senderName: string;
-  senderProfileImage: string;
-  text: string;
-  at: string;
-  timestampMs: number;
-};
-
-function formatHourLabel(value: Date) {
-  return value.toLocaleTimeString("es-MX", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
-function fallbackContactLabel(uid: string) {
-  return `Contacto ${uid.slice(0, 6)}`;
-}
-
 export async function persistChatMessage(params: {
   chatId: string;
   userId: string;

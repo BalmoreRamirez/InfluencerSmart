@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/shared/stores/auth-store";
-import { listPublicInfluencers } from "@/shared/services/firebase-influencers-service";
+import { useAuthStore } from "@/features/auth/stores/auth-store";
+import { listPublicInfluencers } from "@/features/influencer/services/firebase-influencers-service";
 
 export default function Home() {
   const router = useRouter();

@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminServices } from "@/shared/lib/firebase-admin";
+import {
+  getAdminServices,
+  getMissingFirebaseAdminEnv,
+  isFirebaseAdminConfigured,
+} from "@/shared/lib/firebase-admin";
 
 type ConversationRow = {
   chatId: string;
@@ -29,6 +33,15 @@ function fallbackContactLabel(uid: string) {
 
 export async function GET(request: NextRequest) {
   try {
+    if (!isFirebaseAdminConfigured()) {
+      return NextResponse.json(
+        {
+          error: `Firebase Admin no configurado. Faltan: ${getMissingFirebaseAdminEnv().join(", ")}`,
+        },
+        { status: 503 }
+      );
+    }
+
     const uid = await getUidFromBearer(request);
     if (!uid) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });

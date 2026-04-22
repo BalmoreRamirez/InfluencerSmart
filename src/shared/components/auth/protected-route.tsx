@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { type AppRole } from "@/shared/lib/firebase-collections";
-import { useAuthStore } from "@/shared/stores/auth-store";
+import { useAuthStore } from "@/features/auth/stores/auth-store";
 
 type ProtectedRouteProps = {
   children: React.ReactNode;
@@ -28,21 +28,25 @@ export function ProtectedRoute({ children, allowedRole }: ProtectedRouteProps) {
 
     if (!session) {
       // No hay sesión, redirigir a login
-      router.push("/login");
+      if (pathname !== "/login") {
+        router.replace("/login");
+      }
       return;
     }
 
     if (session.role !== allowedRole) {
       // Rol incorrecto, redirigir a su dashboard
       const redirectTo = session.role === "influencer" ? "/influencer" : "/empresa";
-      router.push(redirectTo);
+      if (pathname !== redirectTo) {
+        router.replace(redirectTo);
+      }
       return;
     }
 
     if (!session.onboardingComplete) {
       const onboardingPath = session.role === "influencer" ? "/influencer/perfil" : "/empresa/perfil";
       if (pathname !== onboardingPath) {
-        router.push(onboardingPath);
+        router.replace(onboardingPath);
         return;
       }
     }

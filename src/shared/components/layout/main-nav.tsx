@@ -4,8 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/shared/stores/auth-store";
-import { useChatStore } from "@/shared/stores/chat-store";
+import { useAuthStore } from "@/features/auth/stores/auth-store";
+import { useChatStore } from "@/features/chat/stores/chat-store";
 
 const navItems = [
   { href: "/", label: "Inicio" },
@@ -53,9 +53,12 @@ export function MainNav() {
   }, [disconnectChat, initializeChat, isHydrated, session]);
 
   async function handleLogout() {
-    await logout();
-    router.push("/");
-    router.refresh();
+    try {
+      await logout();
+    } finally {
+      disconnectChat();
+      router.replace("/login");
+    }
   }
 
   async function handleMobileLogout() {

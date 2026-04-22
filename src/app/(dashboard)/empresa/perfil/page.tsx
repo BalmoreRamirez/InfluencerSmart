@@ -3,12 +3,12 @@
 import { FormEvent, useEffect, useState } from "react";
 import Image from "next/image";
 import { ProtectedRoute } from "@/shared/components/auth/protected-route";
-import { useAuthStore } from "@/shared/stores/auth-store";
+import { useAuthStore } from "@/features/auth/stores/auth-store";
 import {
   getCompanyOnboarding,
   saveCompanyOnboarding,
   type CompanyOnboardingInput,
-} from "@/shared/services/firebase-onboarding-service";
+} from "@/features/onboarding/services/firebase-onboarding-service";
 
 const initialForm: CompanyOnboardingInput = {
   companyName: "",

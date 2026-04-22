@@ -4,9 +4,9 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { ProtectedRoute } from "@/shared/components/auth/protected-route";
 import { MetricCard } from "@/shared/components/ui/metric-card";
-import { listPublicInfluencers, type PublicInfluencerCard } from "@/shared/services/firebase-influencers-service";
-import { getCompanyOnboarding } from "@/shared/services/firebase-onboarding-service";
-import { useAuthStore } from "@/shared/stores/auth-store";
+import { listPublicInfluencers, type PublicInfluencerCard } from "@/features/influencer/services/firebase-influencers-service";
+import { getCompanyOnboarding } from "@/features/onboarding/services/firebase-onboarding-service";
+import { useAuthStore } from "@/features/auth/stores/auth-store";
 
 function CompanyDashboardContent() {
   const session = useAuthStore((state) => state.session);

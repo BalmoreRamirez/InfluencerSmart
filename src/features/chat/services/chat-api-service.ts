@@ -34,6 +34,14 @@ type MessageViaApi = {
   timestampMs?: number;
 };
 
+let chatAdminApiUnavailable = false;
+
+function markAdminApiUnavailable(status: number, errorMessage: string | undefined) {
+  if (status === 503 && errorMessage?.includes("Firebase Admin no configurado")) {
+    chatAdminApiUnavailable = true;
+  }
+}
+
 async function getAuthToken() {
   const currentUser = auth?.currentUser;
   if (!currentUser) {
@@ -44,6 +52,10 @@ async function getAuthToken() {
 }
 
 export async function sendMessageViaApi(payload: SendViaApiPayload) {
+  if (chatAdminApiUnavailable) {
+    throw new Error("Chat no disponible: Firebase Admin no configurado en el servidor.");
+  }
+
   const token = await getAuthToken();
 
   const response = await fetch("/api/chat/send", {
@@ -57,6 +69,7 @@ export async function sendMessageViaApi(payload: SendViaApiPayload) {
 
   if (!response.ok) {
     const data = (await response.json().catch(() => null)) as { error?: string } | null;
+    markAdminApiUnavailable(response.status, data?.error);
     throw new Error(data?.error ?? "No se pudo enviar el mensaje.");
   }
 
@@ -64,6 +77,10 @@ export async function sendMessageViaApi(payload: SendViaApiPayload) {
 }
 
 export async function fetchConversationsViaApi() {
+  if (chatAdminApiUnavailable) {
+    return [] as ConversationViaApi[];
+  }
+
   const token = await getAuthToken();
 
   const response = await fetch("/api/chat/conversations", {
@@ -75,6 +92,10 @@ export async function fetchConversationsViaApi() {
 
   if (!response.ok) {
     const data = (await response.json().catch(() => null)) as { error?: string } | null;
+    markAdminApiUnavailable(response.status, data?.error);
+    if (chatAdminApiUnavailable) {
+      return [] as ConversationViaApi[];
+    }
     throw new Error(data?.error ?? "No se pudieron cargar las conversaciones.");
   }
 
@@ -87,6 +108,10 @@ export async function fetchConversationsViaApi() {
 }
 
 export async function fetchMessagesViaApi(chatId: string, role: ChatRole, limitCount = 40) {
+  if (chatAdminApiUnavailable) {
+    return [] as MessageViaApi[];
+  }
+
   const token = await getAuthToken();
 
   const response = await fetch(
@@ -101,6 +126,10 @@ export async function fetchMessagesViaApi(chatId: string, role: ChatRole, limitC
 
   if (!response.ok) {
     const data = (await response.json().catch(() => null)) as { error?: string } | null;
+    markAdminApiUnavailable(response.status, data?.error);
+    if (chatAdminApiUnavailable) {
+      return [] as MessageViaApi[];
+    }
     throw new Error(data?.error ?? "No se pudieron cargar los mensajes.");
   }
 
@@ -113,6 +142,10 @@ export async function fetchMessagesViaApi(chatId: string, role: ChatRole, limitC
 }
 
 export async function markConversationReadViaApi(chatId: string) {
+  if (chatAdminApiUnavailable) {
+    return;
+  }
+
   const token = await getAuthToken();
 
   const response = await fetch("/api/chat/read", {
@@ -126,6 +159,10 @@ export async function markConversationReadViaApi(chatId: string) {
 
   if (!response.ok) {
     const data = (await response.json().catch(() => null)) as { error?: string } | null;
+    markAdminApiUnavailable(response.status, data?.error);
+    if (chatAdminApiUnavailable) {
+      return;
+    }
     throw new Error(data?.error ?? "No se pudo marcar como leído.");
   }
 }

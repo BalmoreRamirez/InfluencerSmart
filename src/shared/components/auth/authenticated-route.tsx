@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/shared/stores/auth-store";
+import { usePathname, useRouter } from "next/navigation";
+import { useAuthStore } from "@/features/auth/stores/auth-store";
 
 type AuthenticatedRouteProps = {
   children: React.ReactNode;
@@ -10,6 +10,7 @@ type AuthenticatedRouteProps = {
 
 export function AuthenticatedRoute({ children }: AuthenticatedRouteProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const session = useAuthStore((state) => state.session);
   const isHydrated = useAuthStore((state) => state.isHydrated);
   const hydrateSession = useAuthStore((state) => state.hydrateSession);
@@ -25,12 +26,14 @@ export function AuthenticatedRoute({ children }: AuthenticatedRouteProps) {
 
     if (!session) {
       // No hay sesión, redirigir a login
-      router.push("/login");
+      if (pathname !== "/login") {
+        router.replace("/login");
+      }
       return;
     }
 
     // Autorizado (cualquier rol)
-  }, [router, session, isHydrated]);
+  }, [router, pathname, session, isHydrated]);
 
   if (!isHydrated || !session) {
     return (
