@@ -1,0 +1,184 @@
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+    font-family: "Manrope", "Inter", system-ui, -apple-system, sans-serif;
+    color: #1f2937;
+    background-color: #f8fafc;
+    --brand-primary: #2646e1;
+    --brand-accent: #d34e61;
+    --brand-warn: #eda323;
+    --brand-success: #5fb180;
+    --brand-ink: #17181c;
+    --brand-sky: #86b5f6;
+    --brand-mist: #c4cadf;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: #f8fafc;
+  }
+
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+}
+
+@layer components {
+  .app-shell {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding: 32px;
+  }
+
+  .app-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+
+  .subtitle {
+    color: #64748b;
+    margin: 8px 0 0;
+  }
+
+  .nav-actions {
+    display: flex;
+    gap: 16px;
+  }
+
+  .nav-link {
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: white;
+    border: 1px solid #e2e8f0;
+  }
+
+  .app-main {
+    display: grid;
+    gap: 20px;
+  }
+
+  .card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+  }
+
+  .button-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+
+  .muted {
+    color: #64748b;
+  }
+}
+
+.p-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border: 1px solid var(--brand-primary);
+  border-radius: 6px;
+  background: var(--brand-primary);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 600;
+  line-height: 1.5;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease,
+    color 0.2s ease;
+}
+
+.p-button:not(:disabled):hover {
+  background: #2049f0;
+  border-color: #2049f0;
+  color: #ffffff;
+}
+
+.p-button:not(:disabled):active {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  color: #ffffff;
+}
+
+.p-button.p-button-outlined {
+  background: transparent;
+  color: var(--brand-primary);
+}
+
+.p-button.p-button-outlined:not(:disabled):hover {
+  background: rgba(38, 70, 225, 0.06);
+  color: var(--brand-primary);
+}
+
+.p-button.p-button-rounded {
+  border-radius: 999px;
+}
+
+.p-button.p-button-sm {
+  padding: 0.65625rem 1.09375rem;
+  font-size: 0.875rem;
+}
+
+.p-button:focus-visible {
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(38, 70, 225, 0.2);
+}
+
+.p-inputtext {
+  width: 100%;
+  padding: 0.75rem 0.75rem;
+  border: 1px solid var(--brand-mist);
+  border-radius: 6px;
+  background: #ffffff;
+  color: #1f2937;
+  font: inherit;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.p-inputtext:enabled:hover {
+  border-color: var(--brand-primary);
+}
+
+.p-inputtext:enabled:focus {
+  outline: 0;
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 0.2rem rgba(38, 70, 225, 0.15);
+}
+
+.p-password {
+  display: inline-flex;
+  width: 100%;
+}
+
+.p-password .p-inputtext {
+  width: 100%;
+}
+
+.p-password .p-password-toggle-mask {
+  color: #64748b;
+}
+
